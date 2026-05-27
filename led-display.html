@@ -183,15 +183,19 @@
             
             let frame = 0;
             let currentPattern = 0;
-            let patternSpeeds = new Array(18).fill(1.0);
+            let defaultSpeeds = [
+                3.2, 5.0, 1.0, 5.0, 3.5, 1.0, 3.0, 3.0, 5.0, 3.0, 5.0, 5.0, 5.0, 5.0, 3.2, 4.0, 1.5, 1.0
+            ];
+            let patternSpeeds = defaultSpeeds.slice();
+            try {
+                if (localStorage.getItem('speedsOuter')) patternSpeeds = JSON.parse(localStorage.getItem('speedsOuter'));
+            } catch(e) {}
             
             const PATTERNS = [
                 { id: 0, icon: '🌊', name: 'Ripple' },
                 { id: 1, icon: '⚡', name: 'Chase' },
-                { id: 2, icon: '💚', name: 'Pulse' },
                 { id: 3, icon: '🌈', name: 'Rainbow' },
                 { id: 4, icon: '✨', name: 'Twinkle' },
-                { id: 5, icon: '🔵', name: 'Scan' },
                 { id: 6, icon: '☀️', name: 'Sun Leaf' },
                 { id: 7, icon: '🌪️', name: 'Turbo' },
                 { id: 8, icon: '🌀', name: 'Spiral' },
@@ -799,6 +803,7 @@
                 document.getElementById('spd-lbl').textContent = spd.toFixed(1) + 'x';
                 const btn = document.getElementById(`btn-p${currentPattern}`);
                 if (btn) btn.querySelector('.spd-badge').textContent = spd.toFixed(1) + 'x';
+                localStorage.setItem('speedsOuter', JSON.stringify(patternSpeeds));
             };
 
             window.changeSize = (val) => {

@@ -209,10 +209,21 @@
 
 <body>
 
-    <aside class="sidebar">
-        <a href="index.html" class="ctrl-btn gold" style="margin-bottom: 20px;">← Main Thoran</a>
+    <aside class="sidebar" id="sidebar">
+        <div style="display:flex; gap:10px; margin-bottom: 20px;">
+            <a href="index.html" class="ctrl-btn gold" style="flex:1;">← Main</a>
+            <button class="ctrl-btn" style="flex:1; justify-content:center; background:rgba(0,180,255,0.2); border-color:#00b4ff; color:#00d0ff;" onclick="toggleProjector()">📽️ Projector</button>
+        </div>
 
         <div class="ctrl-group">
+            <div class="setting-row" style="justify-content:space-between; align-items:center;">
+                <span class="ctrl-label" style="margin:0; font-size:14px; font-weight:bold; color: #fff;">Master Power</span>
+                <label class="switch">
+                    <input type="checkbox" id="power-check" checked onchange="togglePower(this.checked)">
+                    <span class="slider"></span>
+                </label>
+            </div>
+            <div class="ctrl-divider" style="height:1px; width:100%; margin:10px 0;"></div>
             <span class="ctrl-label">Auto Mode</span>
             <div class="auto-toggle">
                 <span style="color:#ddd; font-size: 13px;">Enable Auto</span>
@@ -247,10 +258,10 @@
                 <span id="bgstar-size-lbl" style="width:35px; text-align:right;">0.45</span>
             </div>
             <div class="btn-grid" id="bgstar-btns">
-                <button class="ctrl-btn active" onclick="setPatternBgStar(0, this)">🌊 Wave</button>
+                <button class="ctrl-btn" onclick="setPatternBgStar(0, this)">🌊 Wave</button>
                 <button class="ctrl-btn" onclick="setPatternBgStar(1, this)">⚡ Chase</button>
                 <button class="ctrl-btn" onclick="setPatternBgStar(2, this)">💚 Pulse</button>
-                <button class="ctrl-btn" onclick="setPatternBgStar(3, this)">🌈 Rainbow</button>
+                <button class="ctrl-btn active" onclick="setPatternBgStar(3, this)">🌈 Rainbow</button>
             </div>
         </div>
 
@@ -260,6 +271,11 @@
                 <span>Speed</span>
                 <input type="range" id="speed-slider-center" min="0.1" max="5.0" step="0.1" value="1.0" oninput="changeSpeedCenter(this.value)" style="width:100px;">
                 <span id="spd-lbl-center" style="width:35px; text-align:right;">1.0x</span>
+            </div>
+            <div class="setting-row">
+                <span>Glow</span>
+                <input type="range" id="glow-slider-center" min="0" max="3" step="0.1" value="1.0" oninput="changeGlowCenter(this.value)" style="width:100px;">
+                <span id="glow-lbl-center" style="width:35px; text-align:right;">1.0x</span>
             </div>
             <div class="btn-grid" id="center-btns">
                 <!-- Buttons injected by JS -->
@@ -272,6 +288,11 @@
                 <span>Speed</span>
                 <input type="range" id="speed-slider-outer" min="0.1" max="5.0" step="0.1" value="1.0" oninput="changeSpeedOuter(this.value)" style="width:100px;">
                 <span id="spd-lbl-outer" style="width:35px; text-align:right;">1.0x</span>
+            </div>
+            <div class="setting-row">
+                <span>Glow</span>
+                <input type="range" id="glow-slider-outer" min="0" max="3" step="0.1" value="1.0" oninput="changeGlowOuter(this.value)" style="width:100px;">
+                <span id="glow-lbl-outer" style="width:35px; text-align:right;">1.0x</span>
             </div>
             <div class="btn-grid" id="outer-btns">
                 <!-- Buttons injected by JS -->
@@ -313,9 +334,29 @@
                 <input type="range" id="zoom-slider" min="0.5" max="3" step="0.1" value="1" oninput="changeZoom(this.value)" style="width:120px;">
                 <span id="zoom-lbl" style="width: 35px; text-align: right;">1.0x</span>
             </div>
+            <div class="setting-row">
+                <span>Global Glow</span>
+                <input type="range" id="glow-slider-global" min="0" max="3" step="0.1" value="1.0" oninput="changeGlowGlobal(this.value)" style="width:100px;">
+                <span id="glow-lbl-global" style="width:35px; text-align:right;">1.0x</span>
+            </div>
             <div class="setting-row" style="justify-content: center; margin-top: 10px;">
                 <button class="ctrl-btn" onclick="resetView()">Reset View 🎯</button>
             </div>
+        </div>
+
+        <div class="ctrl-group">
+            <span class="ctrl-label">Audio Settings</span>
+            <div class="setting-row">
+                <input type="file" id="audio-upload" accept="audio/*" style="display: none;" onchange="handleAudioUpload(event)">
+                <button class="ctrl-btn" onclick="document.getElementById('audio-upload').click()">Load Audio 🎵</button>
+                <button class="ctrl-btn" id="btn-play-pause" onclick="togglePlayPause()" style="width:80px;">▶️ Play</button>
+            </div>
+            <div class="setting-row">
+                <span>Volume</span>
+                <input type="range" id="volume-slider" min="0" max="1" step="0.05" value="0.5" oninput="changeVolume(this.value)" style="width:100px;">
+                <span id="vol-lbl" style="width:35px; text-align:right;">50%</span>
+            </div>
+            <audio id="bg-audio" loop></audio>
         </div>
 
     </aside>
@@ -341,10 +382,8 @@
             const PATTERNS = [
                 { id: 0, icon: '🌊', name: 'Ripple' },
                 { id: 1, icon: '⚡', name: 'Chase' },
-                { id: 2, icon: '💚', name: 'Pulse' },
                 { id: 3, icon: '🌈', name: 'Rainbow' },
                 { id: 4, icon: '✨', name: 'Twinkle' },
-                { id: 5, icon: '🔵', name: 'Scan' },
                 { id: 6, icon: '☀️', name: 'Sun Leaf' },
                 { id: 7, icon: '🌪️', name: 'Turbo' },
                 { id: 8, icon: '🌀', name: 'Spiral' },
@@ -415,9 +454,17 @@
             /* ── State ───────────────────────────────────── */
             let frame = 0;
             let patternCenter = 10; // Default Diamond
-            let patternSpeedsCenter = new Array(18).fill(1.0);
+            let defaultSpeeds = [
+                3.2, 5.0, 1.0, 5.0, 3.5, 1.0, 3.0, 3.0, 5.0, 3.0, 5.0, 5.0, 5.0, 5.0, 3.2, 4.0, 1.5, 1.0
+            ];
+            let patternSpeedsCenter = defaultSpeeds.slice();
+            let patternSpeedsOuter = defaultSpeeds.slice();
+            try {
+                if (localStorage.getItem('speedsCenter')) patternSpeedsCenter = JSON.parse(localStorage.getItem('speedsCenter'));
+                if (localStorage.getItem('speedsOuter')) patternSpeedsOuter = JSON.parse(localStorage.getItem('speedsOuter'));
+            } catch(e) {}
+            
             let patternOuter = 6;  // Default Sun Leaf
-            let patternSpeedsOuter = new Array(18).fill(1.0);
 
             let isAuto = false;
             let autoInterval = 10000;
@@ -432,19 +479,27 @@
             let lastDragX = 0;
             let lastDragY = 0;
 
+            let glowCenter = 1.0;
+            let glowOuter = 1.0;
+            let glowGlobal = 1.0;
+            let isPowerOn = true;
+
             // Background Star Controls
             let showBgStar = true;
-            let patternBgStar = 0; // Wave
+            let patternBgStar = localStorage.getItem('patternBgStar') ? parseInt(localStorage.getItem('patternBgStar')) : 3;
             let speedIdxBgStar = 1;
             const SPEEDS = [0.4, 1, 1.8, 3];
             const SPEED_LABELS = ['0.4×', '1×', '1.8×', '3×'];
-            let bgStarSizeFactor = 0.45;
+            let bgStarSizeFactor = localStorage.getItem('bgStarSize') ? parseFloat(localStorage.getItem('bgStarSize')) : 0.65;
+            
+            document.getElementById('bgstar-size-slider').value = bgStarSizeFactor;
+            document.getElementById('bgstar-size-lbl').textContent = bgStarSizeFactor.toFixed(2);
 
             /* ── Images ──────────────────────────────────── */
-            // 9 Images for the 9 panels. Index 0 is center, 1-8 are outer.
-            const panelImages = new Array(9).fill(null).map(() => {
+            const panelImages = new Array(9).fill(null).map((_, i) => {
                 const img = new Image();
-                img.src = 'assets/buddha_center.png';
+                const saved = localStorage.getItem('panelImg_' + i);
+                img.src = saved ? saved : 'assets/buddha_center.png';
                 return img;
             });
 
@@ -457,11 +512,26 @@
                 
                 const reader = new FileReader();
                 reader.onload = (e) => {
-                    panelImages[targetIndex].src = e.target.result;
+                    const tempImg = new Image();
+                    tempImg.onload = () => {
+                        const maxDim = 800;
+                        let w = tempImg.width, h = tempImg.height;
+                        if (w > maxDim || h > maxDim) {
+                            if (w > h) { h = (h/w)*maxDim; w = maxDim; }
+                            else { w = (w/h)*maxDim; h = maxDim; }
+                        }
+                        const cvs = document.createElement('canvas');
+                        cvs.width = w; cvs.height = h;
+                        const ctx = cvs.getContext('2d');
+                        ctx.drawImage(tempImg, 0, 0, w, h);
+                        const dataUrl = cvs.toDataURL('image/jpeg', 0.85);
+                        
+                        panelImages[targetIndex].src = dataUrl;
+                        try { localStorage.setItem('panelImg_' + targetIndex, dataUrl); } catch(err) {}
+                    };
+                    tempImg.src = e.target.result;
                 };
                 reader.readAsDataURL(file);
-                
-                // Clear input so same file can be uploaded again if needed
                 event.target.value = '';
             };
 
@@ -546,13 +616,12 @@
                 }
             }
 
-            function drawLED(ctx, x, y, col, bright, glowMultiplier = 9.5, coreSize = 3.1) {
-                if (bright < 0.03) return;
+            function drawLED(ctx, x, y, col, bright, coreSize, glowMultiplier) {
                 const hue = HUE[col] ?? 128;
                 const sat = SAT[col] ?? 100;
                 const lit = LIT[col] ?? 50;
 
-                const gr = glowMultiplier * bright;
+                const gr = glowMultiplier * bright * glowGlobal;
                 const grad = ctx.createRadialGradient(x, y, 0, x, y, gr);
                 grad.addColorStop(0, `hsla(${hue},${sat}%,${lit + 22}%,${bright})`);
                 grad.addColorStop(0.32, `hsla(${hue},${sat}%,${lit}%,${bright * 0.42})`);
@@ -591,7 +660,7 @@
                         b = 0.9;
                     }
                     
-                    drawLED(ctx, led.baseX, led.baseY, c, b, 10, 3);
+                    drawLED(ctx, led.baseX, led.baseY, c, b, 3, 10);
                 });
                 ctx.restore();
             }
@@ -863,6 +932,10 @@
 
             /* ── Render LEDs to Offscreen Canvas ──────────── */
             function renderLedsToCtx(ctxOff, pattern, speed) {
+                if (!isPowerOn) {
+                    ctxOff.clearRect(0, 0, ctxOff.canvas.width, ctxOff.canvas.height);
+                    return;
+                }
                 ctxOff.clearRect(0, 0, ctxOff.canvas.width, ctxOff.canvas.height);
                 ctxOff.save();
                 
@@ -882,7 +955,11 @@
 
                 ctxOff.save();
                 ctxOff.globalCompositeOperation = 'screen';
-                leds.forEach(l => drawLED(ctxOff, l.x, l.y, l.active, l.bright));
+                const isCenter = (ctxOff.canvas === offCanvasCenter);
+                const glowMult = isCenter ? (9.5 * glowCenter) : (9.5 * glowOuter);
+                leds.forEach(l => {
+                    drawLED(ctxOff, l.x, l.y, l.active, l.bright, 3.1, glowMult);
+                });
                 ctxOff.restore();
 
                 /* Outer anti-clockwise yellow dot border and solid line */
@@ -1001,10 +1078,20 @@
             
             window.setPatternBgStar = (p, btn) => {
                 patternBgStar = p;
+                localStorage.setItem('patternBgStar', p);
                 const btns = document.getElementById('bgstar-btns').querySelectorAll('.ctrl-btn');
                 btns.forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
             }
+            
+            // Re-apply correct active button for BgStar on load
+            document.addEventListener('DOMContentLoaded', () => {
+                const btns = document.getElementById('bgstar-btns').querySelectorAll('.ctrl-btn');
+                btns.forEach((b, i) => {
+                    if (i === patternBgStar) b.classList.add('active');
+                    else b.classList.remove('active');
+                });
+            });
             
             function updateButtonStates(containerId, activePattern) {
                 const container = document.getElementById(containerId);
@@ -1015,12 +1102,33 @@
                 });
             }
 
+            window.toggleProjector = () => {
+                const sidebar = document.getElementById('sidebar');
+                if (!document.fullscreenElement) {
+                    document.documentElement.requestFullscreen().catch(err => {
+                        console.log(`Error attempting to enable full-screen mode: ${err.message} (${err.name})`);
+                    });
+                } else {
+                    document.exitFullscreen();
+                }
+            };
+            
+            document.addEventListener('fullscreenchange', () => {
+                const sidebar = document.getElementById('sidebar');
+                if (document.fullscreenElement) {
+                    sidebar.style.display = 'none';
+                } else {
+                    sidebar.style.display = 'block';
+                }
+            });
+
             window.changeSpeedCenter = (val) => {
                 const spd = parseFloat(val);
                 patternSpeedsCenter[patternCenter] = spd;
                 document.getElementById('spd-lbl-center').textContent = spd.toFixed(1) + 'x';
                 const btn = document.getElementById(`btn-c-${patternCenter}`);
                 if (btn) btn.querySelector('.spd-badge').textContent = spd.toFixed(1) + 'x';
+                localStorage.setItem('speedsCenter', JSON.stringify(patternSpeedsCenter));
             };
             
             window.changeSpeedOuter = (val) => {
@@ -1029,6 +1137,65 @@
                 document.getElementById('spd-lbl-outer').textContent = spd.toFixed(1) + 'x';
                 const btn = document.getElementById(`btn-o-${patternOuter}`);
                 if (btn) btn.querySelector('.spd-badge').textContent = spd.toFixed(1) + 'x';
+                localStorage.setItem('speedsOuter', JSON.stringify(patternSpeedsOuter));
+            };
+            
+            window.changeGlowCenter = (val) => {
+                glowCenter = parseFloat(val);
+                document.getElementById('glow-lbl-center').textContent = glowCenter.toFixed(1) + 'x';
+            };
+            
+            window.changeGlowOuter = (val) => {
+                glowOuter = parseFloat(val);
+                document.getElementById('glow-lbl-outer').textContent = glowOuter.toFixed(1) + 'x';
+            };
+            
+            window.changeGlowGlobal = (val) => {
+                glowGlobal = parseFloat(val);
+                document.getElementById('glow-lbl-global').textContent = glowGlobal.toFixed(1) + 'x';
+            };
+            
+            window.togglePower = (checked) => {
+                isPowerOn = checked;
+                const audio = document.getElementById('bg-audio');
+                if (!isPowerOn) {
+                    audio.pause();
+                    document.getElementById('btn-play-pause').innerHTML = '▶️ Play';
+                } else if (isAuto && audio.src) {
+                    audio.play();
+                    document.getElementById('btn-play-pause').innerHTML = '⏸️ Pause';
+                }
+            };
+            
+            window.handleAudioUpload = (event) => {
+                const file = event.target.files[0];
+                if (!file) return;
+                const url = URL.createObjectURL(file);
+                const audio = document.getElementById('bg-audio');
+                audio.src = url;
+                if (isPowerOn && isAuto) {
+                    audio.play();
+                    document.getElementById('btn-play-pause').innerHTML = '⏸️ Pause';
+                }
+            };
+            
+            window.togglePlayPause = () => {
+                const audio = document.getElementById('bg-audio');
+                if (!audio.src) return;
+                
+                if (audio.paused) {
+                    audio.play();
+                    document.getElementById('btn-play-pause').innerHTML = '⏸️ Pause';
+                } else {
+                    audio.pause();
+                    document.getElementById('btn-play-pause').innerHTML = '▶️ Play';
+                }
+            };
+            
+            window.changeVolume = (val) => {
+                const vol = parseFloat(val);
+                document.getElementById('bg-audio').volume = vol;
+                document.getElementById('vol-lbl').textContent = Math.round(vol * 100) + '%';
             };
             
             window.cycleSpeedBgStar = () => {
@@ -1042,6 +1209,7 @@
             
             window.changeBgStarSize = (val) => {
                 bgStarSizeFactor = parseFloat(val);
+                localStorage.setItem('bgStarSize', bgStarSizeFactor);
                 document.getElementById('bgstar-size-lbl').textContent = bgStarSizeFactor.toFixed(2);
                 generateBgStarLeds();
             };
