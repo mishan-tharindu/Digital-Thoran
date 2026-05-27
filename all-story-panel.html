@@ -1,0 +1,1117 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Digital LED Vesak Pandol – All Story Panel</title>
+    <meta name="description"
+        content="An immersive LED Vesak Pandol display with one large central circle and 8 smaller circles.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <style>
+        *,
+        *::before,
+        *::after {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #000;
+            min-height: 100vh;
+            display: flex;
+            overflow: hidden;
+            font-family: 'Outfit', sans-serif;
+            user-select: none;
+        }
+
+        .sidebar {
+            width: 300px;
+            height: 100vh;
+            max-height: 100vh;
+            background: rgba(0, 5, 12, 0.95);
+            backdrop-filter: blur(14px);
+            border-right: 1px solid rgba(0, 200, 80, 0.15);
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+            flex-shrink: 0;
+            padding: 15px;
+            z-index: 100;
+        }
+
+        .sidebar::-webkit-scrollbar {
+            width: 6px;
+        }
+        .sidebar::-webkit-scrollbar-thumb {
+            background: rgba(0, 200, 80, 0.3);
+            border-radius: 4px;
+        }
+
+        .canvas-wrap {
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex: 1;
+            height: 100vh;
+            cursor: grab;
+        }
+        .canvas-wrap:active {
+            cursor: grabbing;
+        }
+
+        #led-canvas {
+            display: block;
+        }
+
+        /* ── Controls ─────────────────────────── */
+        .ctrl-group {
+            margin-bottom: 20px;
+        }
+
+        .ctrl-label {
+            color: rgba(255, 255, 255, 0.4);
+            font-size: 11px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+            display: block;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            padding-bottom: 4px;
+        }
+
+        .btn-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 6px;
+        }
+
+        .ctrl-btn {
+            background: rgba(0, 60, 20, 0.3);
+            border: 1px solid rgba(0, 180, 70, 0.35);
+            color: #00dd60;
+            padding: 6px 10px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 12px;
+            font-family: 'Outfit', sans-serif;
+            transition: all 0.18s ease;
+            text-align: left;
+            user-select: none;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .ctrl-btn:hover {
+            background: rgba(0, 120, 40, 0.4);
+            border-color: #00ee70;
+            box-shadow: 0 0 10px rgba(0, 220, 80, 0.3);
+            color: #88ffaa;
+        }
+
+        .ctrl-btn.active {
+            background: rgba(0, 150, 55, 0.45);
+            border-color: #00ff80;
+            color: #88ffaa;
+            box-shadow: 0 0 14px rgba(0, 255, 80, 0.4);
+        }
+
+        .ctrl-btn.gold {
+            border-color: rgba(255, 215, 0, 0.45);
+            color: #ffd700;
+            background: rgba(70, 50, 0, 0.3);
+            justify-content: center;
+            text-decoration: none;
+            text-align: center;
+        }
+
+        .ctrl-btn.gold:hover {
+            border-color: #ffd700;
+            background: rgba(110, 80, 0, 0.4);
+            color: #ffe85a;
+            box-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
+        }
+
+        .setting-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .setting-row span {
+            color: #aaa;
+            font-size: 13px;
+        }
+
+        input[type="range"] {
+            accent-color: #00dd60;
+            cursor: pointer;
+        }
+        
+        select {
+            background: rgba(0, 40, 15, 0.5);
+            color: #88ffaa;
+            border: 1px solid rgba(0, 180, 70, 0.35);
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-family: 'Outfit', sans-serif;
+            font-size: 13px;
+            outline: none;
+        }
+
+        .auto-toggle {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(255,255,255,0.05);
+            padding: 8px 10px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+        
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 34px;
+            height: 20px;
+        }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background-color: #333;
+            transition: .4s;
+            border-radius: 20px;
+        }
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 14px;
+            width: 14px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        input:checked + .slider { background-color: #00dd60; }
+        input:checked + .slider:before { transform: translateX(14px); }
+
+    </style>
+</head>
+
+<body>
+
+    <aside class="sidebar">
+        <a href="index.html" class="ctrl-btn gold" style="margin-bottom: 20px;">← Main Thoran</a>
+
+        <div class="ctrl-group">
+            <span class="ctrl-label">Auto Mode</span>
+            <div class="auto-toggle">
+                <span style="color:#ddd; font-size: 13px;">Enable Auto</span>
+                <label class="switch">
+                    <input type="checkbox" id="auto-check" onchange="toggleAuto(this.checked)">
+                    <span class="slider"></span>
+                </label>
+            </div>
+            <div class="setting-row">
+                <span>Interval</span>
+                <input type="range" id="interval-slider" min="2" max="30" value="10" oninput="changeInterval(this.value)" style="width: 100px;">
+                <span id="interval-lbl" style="width: 30px; text-align: right;">10s</span>
+            </div>
+        </div>
+
+        <div class="ctrl-group">
+            <span class="ctrl-label">Background Star</span>
+            <div class="auto-toggle">
+                <span style="color:#ddd; font-size: 13px;">Show Star</span>
+                <label class="switch">
+                    <input type="checkbox" id="bgstar-check" checked onchange="toggleBgStar(this.checked)">
+                    <span class="slider"></span>
+                </label>
+            </div>
+            <div class="setting-row">
+                <span>Speed</span>
+                <button class="ctrl-btn" id="btn-speed-bgstar" onclick="cycleSpeedBgStar()" style="width:70px; justify-content:center;">⏩ <span id="spd-lbl-bgstar">1×</span></button>
+            </div>
+            <div class="setting-row">
+                <span>Size</span>
+                <input type="range" id="bgstar-size-slider" min="0.1" max="1.5" step="0.05" value="0.45" oninput="changeBgStarSize(this.value)" style="width:100px;">
+                <span id="bgstar-size-lbl" style="width:35px; text-align:right;">0.45</span>
+            </div>
+            <div class="btn-grid" id="bgstar-btns">
+                <button class="ctrl-btn active" onclick="setPatternBgStar(0, this)">🌊 Wave</button>
+                <button class="ctrl-btn" onclick="setPatternBgStar(1, this)">⚡ Chase</button>
+                <button class="ctrl-btn" onclick="setPatternBgStar(2, this)">💚 Pulse</button>
+                <button class="ctrl-btn" onclick="setPatternBgStar(3, this)">🌈 Rainbow</button>
+            </div>
+        </div>
+
+        <div class="ctrl-group">
+            <span class="ctrl-label">Center Pattern</span>
+            <div class="setting-row">
+                <span>Speed</span>
+                <input type="range" id="speed-slider-center" min="0.1" max="5.0" step="0.1" value="1.0" oninput="changeSpeedCenter(this.value)" style="width:100px;">
+                <span id="spd-lbl-center" style="width:35px; text-align:right;">1.0x</span>
+            </div>
+            <div class="btn-grid" id="center-btns">
+                <!-- Buttons injected by JS -->
+            </div>
+        </div>
+
+        <div class="ctrl-group">
+            <span class="ctrl-label">Outer Patterns</span>
+            <div class="setting-row">
+                <span>Speed</span>
+                <input type="range" id="speed-slider-outer" min="0.1" max="5.0" step="0.1" value="1.0" oninput="changeSpeedOuter(this.value)" style="width:100px;">
+                <span id="spd-lbl-outer" style="width:35px; text-align:right;">1.0x</span>
+            </div>
+            <div class="btn-grid" id="outer-btns">
+                <!-- Buttons injected by JS -->
+            </div>
+        </div>
+        
+        <div class="ctrl-group">
+            <span class="ctrl-label">Image Settings</span>
+            <div class="setting-row">
+                <select id="panel-select">
+                    <option value="0">Center Panel</option>
+                    <option value="1">Panel 1 (Top)</option>
+                    <option value="2">Panel 2</option>
+                    <option value="3">Panel 3</option>
+                    <option value="4">Panel 4 (Right)</option>
+                    <option value="5">Panel 5</option>
+                    <option value="6">Panel 6</option>
+                    <option value="7">Panel 7 (Bottom)</option>
+                    <option value="8">Panel 8</option>
+                </select>
+                <input type="file" id="image-upload" accept="image/*" style="display: none;" onchange="handleImageUpload(event)">
+                <button class="ctrl-btn" onclick="document.getElementById('image-upload').click()">Upload 📁</button>
+            </div>
+        </div>
+
+        <div class="ctrl-group">
+            <span class="ctrl-label">Global View</span>
+            <div class="setting-row">
+                <span>Gap Size</span>
+                <input type="range" id="gap-slider" min="-50" max="150" value="15" oninput="changeGap(this.value)" style="width:120px;">
+                <span id="gap-lbl" style="width: 35px; text-align: right;">15px</span>
+            </div>
+            <div class="setting-row">
+                <span>Size</span>
+                <input type="range" id="size-slider" min="100" max="250" value="180" oninput="changeSize(this.value)" style="width:120px;">
+            </div>
+            <div class="setting-row">
+                <span>Zoom</span>
+                <input type="range" id="zoom-slider" min="0.5" max="3" step="0.1" value="1" oninput="changeZoom(this.value)" style="width:120px;">
+                <span id="zoom-lbl" style="width: 35px; text-align: right;">1.0x</span>
+            </div>
+            <div class="setting-row" style="justify-content: center; margin-top: 10px;">
+                <button class="ctrl-btn" onclick="resetView()">Reset View 🎯</button>
+            </div>
+        </div>
+
+    </aside>
+
+    <div class="canvas-wrap" id="canvas-wrap">
+        <canvas id="led-canvas"></canvas>
+    </div>
+
+    <script>
+        (() => {
+            'use strict';
+
+            const canvas = document.getElementById('led-canvas');
+            const mainCtx = canvas.getContext('2d');
+            
+            const offCanvasCenter = document.createElement('canvas');
+            const ctxCenter = offCanvasCenter.getContext('2d');
+            
+            const offCanvasOuter = document.createElement('canvas');
+            const ctxOuter = offCanvasOuter.getContext('2d');
+
+            /* ── Pattern Metadata ────────────────────────── */
+            const PATTERNS = [
+                { id: 0, icon: '🌊', name: 'Ripple' },
+                { id: 1, icon: '⚡', name: 'Chase' },
+                { id: 2, icon: '💚', name: 'Pulse' },
+                { id: 3, icon: '🌈', name: 'Rainbow' },
+                { id: 4, icon: '✨', name: 'Twinkle' },
+                { id: 5, icon: '🔵', name: 'Scan' },
+                { id: 6, icon: '☀️', name: 'Sun Leaf' },
+                { id: 7, icon: '🌪️', name: 'Turbo' },
+                { id: 8, icon: '🌀', name: 'Spiral' },
+                { id: 9, icon: '🌌', name: 'Galaxy' },
+                { id: 10, icon: '💠', name: 'Diamond' },
+                { id: 11, icon: '🔲', name: 'Tilted' },
+                { id: 12, icon: '➕', name: 'Cross' },
+                { id: 13, icon: '🧶', name: 'Lattice' },
+                { id: 14, icon: '🪷', name: 'Buddha Aura' },
+                { id: 15, icon: '☸️', name: 'Dharma Wheel' },
+                { id: 16, icon: '🔄', name: 'Dharma Sweep' },
+                { id: 17, icon: '⏸️', name: 'Parallel Rays' }
+            ];
+
+            function generateUI() {
+                const centerGrid = document.getElementById('center-btns');
+                const outerGrid = document.getElementById('outer-btns');
+                
+                PATTERNS.forEach(p => {
+                    if (p.id !== 17) {
+                        const btnC = document.createElement('button');
+                        btnC.className = `ctrl-btn ${p.id === patternCenter ? 'active' : ''}`;
+                        btnC.id = `btn-c-${p.id}`;
+                        btnC.innerHTML = `<span style="flex-grow: 1;">${p.icon} ${p.name}</span><span class="spd-badge" style="font-size:10px; color:#aaa; background:rgba(0,0,0,0.5); padding:2px 4px; border-radius:4px;">${patternSpeedsCenter[p.id].toFixed(1)}x</span>`;
+                        btnC.onclick = () => setPatternCenter(p.id);
+                        centerGrid.appendChild(btnC);
+                    }
+                    
+                    const btnO = document.createElement('button');
+                    btnO.className = `ctrl-btn ${p.id === patternOuter ? 'active' : ''}`;
+                    btnO.id = `btn-o-${p.id}`;
+                    btnO.innerHTML = `<span style="flex-grow: 1;">${p.icon} ${p.name}</span><span class="spd-badge" style="font-size:10px; color:#aaa; background:rgba(0,0,0,0.5); padding:2px 4px; border-radius:4px;">${patternSpeedsOuter[p.id].toFixed(1)}x</span>`;
+                    btnO.onclick = () => setPatternOuter(p.id);
+                    outerGrid.appendChild(btnO);
+                });
+            }
+
+            /* ── Layout & Sizing ─────────────────────────── */
+            const RING_SPACING = 16;
+            const DOT_GAP = 14.8;
+            const NUM_RINGS = 17;
+            
+            let BUDDHA_R = 180;
+            let RING_START, LAST_RING_R, SOLID_R, OUTER_R, TOTAL_R, CX, CY;
+            let panels = [];
+            
+            function recalcLayout() {
+                RING_START = BUDDHA_R + 22;
+                LAST_RING_R = RING_START + (NUM_RINGS - 1) * RING_SPACING;
+                SOLID_R = LAST_RING_R + 14;
+                OUTER_R = SOLID_R + 10;
+                TOTAL_R = OUTER_R + 18;
+                
+                CX = 0; CY = 0;
+                
+                const canvasSize = Math.ceil(TOTAL_R * 2 + 40);
+                offCanvasCenter.width = canvasSize;
+                offCanvasCenter.height = canvasSize;
+                
+                offCanvasOuter.width = canvasSize;
+                offCanvasOuter.height = canvasSize;
+                
+                generateLeds();
+                generateBgStarLeds();
+                if (typeof resize === 'function') resize();
+            }
+            
+            /* ── State ───────────────────────────────────── */
+            let frame = 0;
+            let patternCenter = 10; // Default Diamond
+            let patternSpeedsCenter = new Array(18).fill(1.0);
+            let patternOuter = 6;  // Default Sun Leaf
+            let patternSpeedsOuter = new Array(18).fill(1.0);
+
+            let isAuto = false;
+            let autoInterval = 10000;
+            let lastAutoTime = Date.now();
+            
+            // View Controls
+            let zoomFactor = 1.0;
+            let panelGap = 15;
+            let panX = 0;
+            let panY = 0;
+            let isDragging = false;
+            let lastDragX = 0;
+            let lastDragY = 0;
+
+            // Background Star Controls
+            let showBgStar = true;
+            let patternBgStar = 0; // Wave
+            let speedIdxBgStar = 1;
+            const SPEEDS = [0.4, 1, 1.8, 3];
+            const SPEED_LABELS = ['0.4×', '1×', '1.8×', '3×'];
+            let bgStarSizeFactor = 0.45;
+
+            /* ── Images ──────────────────────────────────── */
+            // 9 Images for the 9 panels. Index 0 is center, 1-8 are outer.
+            const panelImages = new Array(9).fill(null).map(() => {
+                const img = new Image();
+                img.src = 'assets/buddha_center.png';
+                return img;
+            });
+
+            window.handleImageUpload = (event) => {
+                const file = event.target.files[0];
+                if (!file) return;
+                
+                const select = document.getElementById('panel-select');
+                const targetIndex = parseInt(select.value, 10);
+                
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    panelImages[targetIndex].src = e.target.result;
+                };
+                reader.readAsDataURL(file);
+                
+                // Clear input so same file can be uploaded again if needed
+                event.target.value = '';
+            };
+
+            /* ── LED Data ────────────────────────────────── */
+            const leds = [];
+            const bgLeds = [];
+
+            const HUE = { green: 128, white: 0, red: 355, yellow: 52, blue: 200, pink: 325, cyan: 180, orange: 32 };
+            const SAT = { green: 100, white: 0, red: 100, yellow: 100, blue: 100, pink: 100, cyan: 100, orange: 100 };
+            const LIT = { green: 46, white: 95, red: 52, yellow: 57, blue: 55, pink: 62, cyan: 58, orange: 58 };
+
+            function generateBgStarLeds() {
+                bgLeds.length = 0;
+                // It fills the whole screen, so base size on max possible extent
+                const wrap = document.getElementById('canvas-wrap');
+                const LW = Math.max(wrap.clientWidth, 1200);
+                const LH = Math.max(wrap.clientHeight, 800);
+                
+                const numRings = 15;
+                const baseSize = Math.min(LW, LH) * bgStarSizeFactor;
+                const ringSpacing = baseSize / numRings;
+                
+                for(let ring = 1; ring <= numRings; ring++) {
+                    const R = ring * ringSpacing;
+                    const r_inner = R * Math.sqrt(2 - Math.SQRT2); 
+                    
+                    for(let seg = 0; seg < 16; seg++) {
+                        const angle1 = seg * Math.PI / 8;
+                        const angle2 = (seg + 1) * Math.PI / 8;
+                        
+                        const r1 = (seg % 2 === 0) ? R : r_inner;
+                        const r2 = (seg % 2 === 0) ? r_inner : R;
+                        
+                        const x1 = Math.cos(angle1) * r1;
+                        const y1 = Math.sin(angle1) * r1;
+                        const x2 = Math.cos(angle2) * r2;
+                        const y2 = Math.sin(angle2) * r2;
+                        
+                        const segLen = Math.hypot(x2 - x1, y2 - y1);
+                        const points = Math.max(1, Math.floor(segLen / 15)); 
+                        
+                        for(let p = 0; p < points; p++) {
+                            const t = p / points;
+                            const x = x1 + (x2 - x1) * t;
+                            const y = y1 + (y2 - y1) * t;
+                            
+                            bgLeds.push({
+                                baseX: x, baseY: y, ring: ring, seg: seg,
+                                base: (ring % 3 === 0) ? 'yellow' : ((ring % 3 === 1) ? 'red' : 'green'),
+                                active: 'white', bright: 1
+                            });
+                        }
+                    }
+                }
+            }
+
+            function generateLeds() {
+                leds.length = 0;
+                let r = RING_START;
+                for (let ring = 0; ring < NUM_RINGS; ring++) {
+                    const circ = 2 * Math.PI * r;
+                    const count = Math.round(circ / DOT_GAP);
+                    for (let i = 0; i < count; i++) {
+                        const angle = (i / count) * Math.PI * 2;
+                        const x = CX + r * Math.cos(angle);
+                        const y = CY + r * Math.sin(angle);
+                        let col;
+                        if (ring === NUM_RINGS - 1) {
+                            const pal = ['red', 'orange', 'yellow', 'green', 'cyan', 'blue', 'pink', 'white'];
+                            col = pal[Math.floor(i * pal.length / count) % pal.length];
+                        } else if (ring === 0) {
+                            col = i % 3 === 0 ? 'white' : 'green';
+                        } else {
+                            col = i % 5 === 0 ? 'white' : 'green';
+                        }
+                        leds.push({
+                            x, y, base: col, active: col, ring, idx: i, count,
+                            bright: 0.75, flick: Math.random() * Math.PI * 2
+                        });
+                    }
+                    r += RING_SPACING;
+                }
+            }
+
+            function drawLED(ctx, x, y, col, bright, glowMultiplier = 9.5, coreSize = 3.1) {
+                if (bright < 0.03) return;
+                const hue = HUE[col] ?? 128;
+                const sat = SAT[col] ?? 100;
+                const lit = LIT[col] ?? 50;
+
+                const gr = glowMultiplier * bright;
+                const grad = ctx.createRadialGradient(x, y, 0, x, y, gr);
+                grad.addColorStop(0, `hsla(${hue},${sat}%,${lit + 22}%,${bright})`);
+                grad.addColorStop(0.32, `hsla(${hue},${sat}%,${lit}%,${bright * 0.42})`);
+                grad.addColorStop(1, `hsla(${hue},${sat}%,${lit}%,0)`);
+                ctx.fillStyle = grad;
+                ctx.beginPath(); ctx.arc(x, y, gr, 0, Math.PI * 2); ctx.fill();
+
+                ctx.fillStyle = `hsla(${hue},${sat}%,92%,${Math.min(1, bright + 0.08)})`;
+                ctx.beginPath(); ctx.arc(x, y, coreSize, 0, Math.PI * 2); ctx.fill();
+            }
+
+            function updateAndDrawBgStar(ctx) {
+                if (!showBgStar) return;
+                
+                const t = frame * SPEEDS[speedIdxBgStar];
+                ctx.save();
+                ctx.globalCompositeOperation = 'screen';
+                
+                // Position background star relative to the global pan/zoom center
+                const wrap = document.getElementById('canvas-wrap');
+                const centerX = wrap.clientWidth / 2;
+                const centerY = wrap.clientHeight / 2;
+                
+                ctx.translate(centerX + panX, centerY + panY);
+                ctx.scale(zoomFactor, zoomFactor);
+
+                bgLeds.forEach(led => {
+                    let b = 0.5;
+                    let c = led.base;
+
+                    if (patternBgStar === 0) b = Math.sin(t * 0.15 - led.ring * 0.5) * 0.5 + 0.5;
+                    else if (patternBgStar === 1) b = (led.ring === Math.floor(t) % 16) ? 1 : 0.2;
+                    else if (patternBgStar === 2) b = Math.sin(t * 0.2) * 0.5 + 0.5;
+                    else if (patternBgStar === 3) {
+                        c = ['red','yellow','green','cyan','blue'][(led.ring + Math.floor(t*0.5)) % 5];
+                        b = 0.9;
+                    }
+                    
+                    drawLED(ctx, led.baseX, led.baseY, c, b, 10, 3);
+                });
+                ctx.restore();
+            }
+
+            function updateLeds(targetPattern, speed) {
+                const t = frame * speed;
+                leds.forEach(led => {
+                    const { ring, idx, count, base, flick } = led;
+                    let b = 0.7;
+
+                    switch (targetPattern) {
+                        case 0: b = Math.sin(t * 0.05 - ring * 0.48 + idx * 0.013) * 0.38 + 0.62; break;
+                        case 1: { const ph = (t * 0.1) % NUM_RINGS; const d = Math.abs(ring - ph); b = d < 1.9 ? (1 - d / 1.9) * 0.92 + 0.08 : 0.06; break; }
+                        case 2: b = Math.sin(t * 0.055) * 0.42 + 0.58; break;
+                        case 3: {
+                            const ang = Math.atan2(led.y - CY, led.x - CX);
+                            const adeg = ((ang * 180 / Math.PI) + 360) % 360;
+                            const h = (adeg + t * 1.2) % 360;
+                            if (h < 45) led.active = 'red'; else if (h < 90) led.active = 'orange'; else if (h < 135) led.active = 'yellow'; else if (h < 180) led.active = 'green'; else if (h < 225) led.active = 'cyan'; else if (h < 270) led.active = 'blue'; else if (h < 315) led.active = 'pink'; else led.active = 'red';
+                            b = Math.sin(t * 0.05 - ring * 0.22) * 0.32 + 0.68; break;
+                        }
+                        case 4: if (Math.random() > 0.993) b = 1.0; else b = led.bright * 0.88 + (Math.sin(t * 0.04 + flick) * 0.22 + 0.56) * 0.12; break;
+                        case 5: {
+                            const scanAngle = (t * 0.06) % (Math.PI * 2);
+                            const ledAngle = Math.atan2(led.y - CY, led.x - CX);
+                            let diff = Math.abs(ledAngle - scanAngle);
+                            if (diff > Math.PI) diff = Math.PI * 2 - diff;
+                            b = diff < 0.35 ? 1 - diff / 0.35 * 0.15 : Math.max(0.06, 1 - diff * 1.4); break;
+                        }
+                        case 6: {
+                            const PETAL_N = 14; const petalSpan = Math.PI * 2 / PETAL_N;
+                            if (ring < 3) { led.active = 'red'; b = Math.sin(t * 0.05 - ring * 0.3) * 0.32 + 0.68; } else {
+                                const angle = Math.atan2(led.y - CY, led.x - CX); const prog = ring / (NUM_RINGS - 1);
+                                const shiftedAngle = angle - prog * 0.5; let normAngle = (shiftedAngle % petalSpan + petalSpan) % petalSpan; let distAngle = Math.abs(normAngle - petalSpan / 2);
+                                const maxAngle = (0.12 + prog * 0.65) * (petalSpan / 2);
+                                if (distAngle <= maxAngle) { led.active = 'cyan'; b = Math.sin(t * 0.12 - Math.floor((shiftedAngle + Math.PI * 2) / petalSpan) * 0.4) * 0.45 + 0.55; } else { led.active = 'white'; b = 0.06; }
+                            } break;
+                        }
+                        case 7: {
+                            const PETAL_N = 8; const petalSpan = Math.PI * 2 / PETAL_N;
+                            if (ring < 4) { led.active = 'pink'; b = Math.sin(t * 0.05 - ring * 0.3) * 0.32 + 0.68; } else {
+                                const angle = Math.atan2(led.y - CY, led.x - CX); const prog = ring / (NUM_RINGS - 1);
+                                const shiftedAngle = angle - prog * 1.5; let normAngle = (shiftedAngle % petalSpan + petalSpan) % petalSpan; let distAngle = Math.abs(normAngle - petalSpan / 2);
+                                const maxAngle = (0.2 + prog * 0.45) * (petalSpan / 2);
+                                if (distAngle <= maxAngle) { led.active = 'green'; b = Math.sin(t * 0.15 - Math.floor((shiftedAngle + Math.PI * 2) / petalSpan) * 0.4) * 0.45 + 0.55; } else { led.active = 'white'; b = 0.06; }
+                            } break;
+                        }
+                        case 8: {
+                            const angle = Math.atan2(led.y - CY, led.x - CX); const prog = ring / (NUM_RINGS - 1);
+                            const shiftedAngle = angle - prog * Math.PI * 1.8; let normAngle = (shiftedAngle % (Math.PI * 2) + Math.PI * 2) % (Math.PI * 2);
+                            const gap = 0.15;
+                            if (normAngle > gap && normAngle < Math.PI - gap) { led.active = 'red'; b = Math.sin(t * 0.1 - ring * 0.2) * 0.3 + 0.7; } else if (normAngle > Math.PI + gap && normAngle < Math.PI * 2 - gap) { led.active = 'white'; b = Math.sin(t * 0.1 - ring * 0.2 + Math.PI) * 0.3 + 0.7; } else { led.active = 'white'; b = 0.04; } break;
+                        }
+                        case 9: {
+                            const PETAL_N = 4; const petalSpan = Math.PI * 2 / PETAL_N;
+                            if (ring < 3) { led.active = 'yellow'; b = Math.sin(t * 0.05 - ring * 0.3) * 0.32 + 0.68; } else {
+                                const angle = Math.atan2(led.y - CY, led.x - CX); const prog = ring / (NUM_RINGS - 1);
+                                const shiftedAngle = angle - prog * Math.PI * 1.2; let normAngle = (shiftedAngle % petalSpan + petalSpan) % petalSpan; let distAngle = Math.abs(normAngle - petalSpan / 2);
+                                const maxAngle = (0.2 + prog * 0.4) * (petalSpan / 2);
+                                if (distAngle <= maxAngle) { led.active = 'blue'; b = Math.sin(t * 0.15 - Math.floor((shiftedAngle + Math.PI * 2) / petalSpan) * 0.4) * 0.45 + 0.55; } else { led.active = 'red'; b = Math.sin(t * 0.15 - ring * 0.2 + Math.PI) * 0.45 + 0.55; }
+                            } break;
+                        }
+                        case 10: {
+                            const maskScale = LAST_RING_R / 412; const dx = Math.abs(led.x - CX) / maskScale; const dy = Math.abs(led.y - CY) / maskScale; const d = dx + dy;
+                            const cx = Math.abs(dx - 220); const cy = Math.abs(dy - 220); const cd = cx + cy;
+                            if (cd < 15) { led.active = 'white'; b = 0.04; } else if (cd < 80) { led.active = 'green'; b = Math.sin(t * 0.08) * 0.2 + 0.8; } else if (cd < 95) { led.active = 'white'; b = 0.04; } else {
+                                const exp = (t * 1.5) % 150; const band = ((d - exp) % 150 + 150) % 150;
+                                if (band < 15) { led.active = 'white'; b = 0.9; } else if (band < 75) { led.active = 'red'; b = 0.8; } else if (band < 90) { led.active = 'white'; b = 0.9; } else { led.active = 'white'; b = 0.04; }
+                            } break;
+                        }
+                        case 11: {
+                            const maskScale = LAST_RING_R / 412; const rawDx = (led.x - CX) / maskScale; const rawDy = (led.y - CY) / maskScale; const d = Math.abs(rawDx) + Math.abs(rawDy);
+                            if (d > 160 && d < 250) { if (rawDx * rawDy > 0) { led.active = 'red'; } else { led.active = 'blue'; } b = 0.8 + Math.sin(t * 0.2) * 0.2; } else { led.active = 'yellow'; b = 0.5 + Math.sin(t * 0.1 - d * 0.02) * 0.3; } break;
+                        }
+                        case 12: {
+                            const maskScale = LAST_RING_R / 412; const dx = Math.abs(led.x - CX) / maskScale; const dy = Math.abs(led.y - CY) / maskScale; const d = dx + dy;
+                            if (d < 110) { led.active = 'white'; b = 0.04; } else if (d < 150) { led.active = 'red'; b = 0.8 + Math.sin(t * 0.15) * 0.2; } else if (dx > 170 && dy > 170) { led.active = 'yellow'; b = 0.8 + Math.sin(t * 0.1 + dx * 0.01) * 0.2; } else { led.active = 'blue'; b = 0.6 + Math.sin(t * 0.05 - d * 0.02) * 0.4; } break;
+                        }
+                        case 13: {
+                            const maskScale = LAST_RING_R / 412; const u = (led.x - CX) / maskScale; const v = (led.y - CY) / maskScale; const ru = u + v; const rv = u - v;
+                            const s1 = Math.sin(ru * 0.04 + t * 0.08); const s2 = Math.sin(rv * 0.04 - t * 0.06); const prod = s1 * s2;
+                            if (prod > 0.2) { led.active = 'cyan'; b = prod * 1.5; } else if (prod < -0.2) { led.active = 'red'; b = -prod * 1.5; } else { led.active = 'white'; b = 0.04; } break;
+                        }
+                        case 14: {
+                            if (ring < 3) {
+                                led.active = 'yellow';
+                                b = 0.8 + Math.sin(t * 0.15 - ring * 0.5) * 0.2;
+                            } else {
+                                const wave = ring * 0.5 - t * 0.15;
+                                const auraColors = ['blue', 'yellow', 'red', 'white', 'orange'];
+                                const cIdx = Math.floor(((wave % 5) + 5) % 5);
+                                led.active = auraColors[cIdx];
+                                b = Math.sin(wave * Math.PI) * 0.35 + 0.65;
+                            }
+                            break;
+                        }
+                        case 15: {
+                            const PETAL_N = 8;
+                            const petalSpan = Math.PI * 2 / PETAL_N;
+                            const angle = Math.atan2(led.y - CY, led.x - CX);
+                            const shiftedAngle = angle - Math.PI / 2;
+                            let normAngle = (shiftedAngle % petalSpan + petalSpan) % petalSpan;
+                            
+                            const spokeGap = 0.12; 
+                            if (normAngle < spokeGap || normAngle > petalSpan - spokeGap) {
+                                led.active = 'yellow';
+                                b = 0.7; // Golden spokes
+                            } else {
+                                const wave = ring - t * 0.35;
+                                const cycle = ((wave % 6) + 6) % 6;
+                                
+                                const bgColors = ['cyan', 'pink', 'blue', 'green'];
+                                const colorIdx = Math.floor(t * 0.03) % bgColors.length;
+                                
+                                if (cycle < 2) {
+                                    led.active = 'white';
+                                    b = 0.95;
+                                } else {
+                                    led.active = bgColors[colorIdx];
+                                    b = 0.15; // Dim background
+                                }
+                            }
+                            break;
+                        }
+                        case 16: { // Dharma Sweep (Anti-clockwise Loading Rings)
+                            const PETAL_N = 8;
+                            const petalSpan = Math.PI * 2 / PETAL_N;
+                            const angle = Math.atan2(led.y - CY, led.x - CX);
+                            const shiftedAngle = angle - Math.PI / 2;
+                            let normAngle = (shiftedAngle % petalSpan + petalSpan) % petalSpan;
+                            
+                            const spokeGap = 0.10; 
+                            if (normAngle < spokeGap || normAngle > petalSpan - spokeGap) {
+                                // Golden spokes ALWAYS showing
+                                led.active = 'yellow';
+                                b = 0.8; 
+                            } else {
+                                // Anti-clockwise angle starting from top
+                                let acwAngle = (-angle - Math.PI / 2 + Math.PI * 4) % (Math.PI * 2);
+                                
+                                let speed = 0.35; // Slower speed
+                                let sweepPhase = (t * speed) % (Math.PI * 2);
+                                let dist = (sweepPhase - acwAngle + Math.PI * 2) % (Math.PI * 2);
+                                
+                                // Tail length of half a circle (Math.PI)
+                                if (dist < Math.PI) {
+                                    // 4 lines ON, 2 lines OFF
+                                    if (ring >= 2 && (ring - 2) % 6 < 4) {
+                                        led.active = 'blue';
+                                        b = Math.max(0.05, 1.0 - (dist / Math.PI)); // Fading tail
+                                    } else {
+                                        led.active = 'white';
+                                        b = 0.02;
+                                    }
+                                } else {
+                                    led.active = 'white';
+                                    b = 0.02;
+                                }
+                            }
+                            break;
+                        }
+                        case 17: { // Parallel Line Animate
+                            const PETAL_N = 8;
+                            const petalSpan = Math.PI * 2 / PETAL_N;
+                            const dx = led.x - CX;
+                            const dy = led.y - CY;
+                            const angle = Math.atan2(dy, dx);
+                            const shiftedAngle = angle - Math.PI / 2;
+                            let normAngle = (shiftedAngle % petalSpan + petalSpan) % petalSpan;
+                            
+                            const spokeGap = 0.10; 
+                            if (normAngle < spokeGap || normAngle > petalSpan - spokeGap) {
+                                led.active = 'yellow';
+                                b = 0.8; // Golden spokes
+                            } else {
+                                let deltaAngle = Math.abs(normAngle - petalSpan / 2);
+                                let d = Math.hypot(dx, dy) * Math.sin(deltaAngle);
+                                
+                                let lineSpacing = 60; // Tuned for 5 lines per slice
+                                let lineWidth = 9;
+                                let distToClosestLine = Math.abs(Math.round(d / lineSpacing) * lineSpacing - d);
+                                
+                                if (distToClosestLine < lineWidth) {
+                                    let sliceIdx = Math.floor((shiftedAngle + Math.PI * 2) / petalSpan);
+                                    let lineIdx = Math.round(d / lineSpacing);
+                                    let hash = Math.abs(Math.sin(sliceIdx * 12.9898 + lineIdx * 78.233));
+                                    
+                                    if (Math.sin(t * 0.5 + hash * 10) > 0.3) {
+                                        led.active = 'white';
+                                        b = 1.0;
+                                    } else {
+                                        led.active = 'cyan';
+                                        b = 0.08;
+                                    }
+                                } else {
+                                    led.active = 'cyan';
+                                    b = 0.08;
+                                }
+                            }
+                            break;
+                        }
+                    }
+                    if (targetPattern < 6 && targetPattern !== 3) {
+                        led.active = base;
+                        if (base === 'white') b = Math.min(1, b * 1.18 + Math.sin(t * 0.28 + flick) * 0.1);
+                    }
+                    led.bright = Math.max(0, Math.min(1, b));
+                });
+            }
+
+            function drawBg() {
+                const g = mainCtx.createRadialGradient(canvas.width/2, canvas.height/2, 55, canvas.width/2, canvas.height/2, Math.max(canvas.width, canvas.height));
+                g.addColorStop(0, '#030e1e');
+                g.addColorStop(0.38, '#010b14');
+                g.addColorStop(1, '#000105');
+                mainCtx.fillStyle = g;
+                mainCtx.fillRect(0, 0, canvas.width, canvas.height);
+            }
+
+            /* ── Draw Center Image directly to Main Canvas ─── */
+            function drawCenter(ctx, panelIndex, scaleRatio) {
+                const img = panelImages[panelIndex];
+                
+                // Dark background
+                const bg = ctx.createRadialGradient(CX, CY - 20, 10, CX, CY, BUDDHA_R);
+                bg.addColorStop(0, '#241000'); bg.addColorStop(0.65, '#120800'); bg.addColorStop(1, '#060300');
+                ctx.fillStyle = bg;
+                ctx.beginPath(); ctx.arc(CX, CY, BUDDHA_R, 0, Math.PI * 2); ctx.fill();
+
+                // Image
+                if (img && img.complete && img.naturalWidth > 0) {
+                    ctx.save();
+                    ctx.beginPath(); ctx.arc(CX, CY, BUDDHA_R - 5, 0, Math.PI * 2); ctx.clip();
+                    const d = (BUDDHA_R - 5) * 2;
+                    const sc = Math.max(d / img.naturalWidth, d / img.naturalHeight);
+                    const dw = img.naturalWidth * sc;
+                    const dh = img.naturalHeight * sc;
+                    ctx.drawImage(img, CX - dw / 2, CY - dh / 2, dw, dh);
+                    ctx.restore();
+                } else {
+                    ctx.fillStyle = '#8B4513';
+                    ctx.beginPath(); ctx.arc(CX, CY, BUDDHA_R - 5, 0, Math.PI * 2); ctx.fill();
+                }
+
+                // Gold rings
+                const pulse = Math.sin(frame * 0.04) * 8;
+                ctx.strokeStyle = '#ffd700'; ctx.lineWidth = 6;
+                ctx.shadowColor = '#ffd700'; ctx.shadowBlur = (18 + pulse) * scaleRatio;
+                ctx.beginPath(); ctx.arc(CX, CY, BUDDHA_R, 0, Math.PI * 2); ctx.stroke();
+                ctx.shadowBlur = 0;
+
+                // Ornamental dots
+                const DOTRING_R = BUDDHA_R + 9;
+                const DOT_N = 44;
+                const spinOffset = frame * 0.004;
+
+                for (let i = 0; i < DOT_N; i++) {
+                    const a = (i / DOT_N) * Math.PI * 2 + spinOffset;
+                    const dx = CX + DOTRING_R * Math.cos(a);
+                    const dy = CY + DOTRING_R * Math.sin(a);
+                    const isW = i % 4 === 0;
+                    const col = isW ? '#ffffff' : '#ffd700';
+                    const bright = 0.65 + Math.sin(frame * 0.1 + i * 0.45) * 0.35;
+                    ctx.fillStyle = col; ctx.shadowColor = col; ctx.shadowBlur = 5 * bright * scaleRatio;
+                    ctx.beginPath(); ctx.arc(dx, dy, 2.8, 0, Math.PI * 2); ctx.fill();
+                }
+                ctx.shadowBlur = 0;
+            }
+
+            /* ── Render LEDs to Offscreen Canvas ──────────── */
+            function renderLedsToCtx(ctxOff, pattern, speed) {
+                ctxOff.clearRect(0, 0, ctxOff.canvas.width, ctxOff.canvas.height);
+                ctxOff.save();
+                
+                const halfW = ctxOff.canvas.width / 2;
+                const halfH = ctxOff.canvas.height / 2;
+                ctxOff.translate(halfW, halfH);
+                
+                // Solid black background donut to prevent background star from bleeding through
+                // but leaving the center transparent so the image and gold rings show!
+                ctxOff.fillStyle = '#000000';
+                ctxOff.beginPath();
+                ctxOff.arc(CX, CY, TOTAL_R + 8, 0, Math.PI * 2, false); // Outer boundary
+                ctxOff.arc(CX, CY, BUDDHA_R + 12, 0, Math.PI * 2, true); // Inner cutout (drawn counter-clockwise)
+                ctxOff.fill();
+
+                updateLeds(pattern, speed);
+
+                ctxOff.save();
+                ctxOff.globalCompositeOperation = 'screen';
+                leds.forEach(l => drawLED(ctxOff, l.x, l.y, l.active, l.bright));
+                ctxOff.restore();
+
+                /* Outer anti-clockwise yellow dot border and solid line */
+                ctxOff.save();
+                const pulse = Math.sin(frame * 0.04) * 8;
+                ctxOff.strokeStyle = '#ffd700'; ctxOff.lineWidth = 4;
+                ctxOff.shadowColor = '#ffd700'; ctxOff.shadowBlur = 12 + pulse;
+                ctxOff.beginPath(); ctxOff.arc(CX, CY, SOLID_R, 0, Math.PI * 2); ctxOff.stroke();
+                ctxOff.shadowBlur = 0;
+
+                const OUTER_N = Math.floor((2 * Math.PI * OUTER_R) / 20);
+                const outerSpin = -frame * 0.003;
+
+                for (let i = 0; i < OUTER_N; i++) {
+                    const a = (i / OUTER_N) * Math.PI * 2 + outerSpin;
+                    const dx = CX + OUTER_R * Math.cos(a);
+                    const dy = CY + OUTER_R * Math.sin(a);
+                    const bright = 0.6 + Math.sin(frame * 0.1 + i * 0.3) * 0.4;
+                    ctxOff.fillStyle = '#ffd700'; ctxOff.shadowColor = '#ffd700'; ctxOff.shadowBlur = 5 * bright;
+                    ctxOff.beginPath(); ctxOff.arc(dx, dy, 3.2, 0, Math.PI * 2); ctxOff.fill();
+                }
+                ctxOff.restore();
+                ctxOff.restore();
+            }
+
+            /* ── Main Render Loop ─────────────────────────── */
+            function render() {
+                frame++;
+                
+                if (isAuto && Date.now() - lastAutoTime > autoInterval) {
+                    lastAutoTime = Date.now();
+                    setPatternCenter((patternCenter + 1) % PATTERNS.length);
+                    setPatternOuter((patternOuter + 1) % PATTERNS.length);
+                }
+                
+                mainCtx.clearRect(0, 0, canvas.width, canvas.height);
+                drawBg();
+                
+                // Draw Background Star (Behind everything)
+                updateAndDrawBgStar(mainCtx);
+                
+                // Render the two sets of panel LEDs
+                renderLedsToCtx(ctxCenter, patternCenter, patternSpeedsCenter[patternCenter]);
+                renderLedsToCtx(ctxOuter, patternOuter, patternSpeedsOuter[patternOuter]);
+
+                const drawW = offCanvasCenter.width;
+                const drawH = offCanvasCenter.height;
+                const drawX = -drawW / 2;
+                const drawY = -drawH / 2;
+
+                // Position panels from the center of the screen
+                const centerX = canvas.width / 2;
+                const centerY = canvas.height / 2;
+
+                panels.forEach((panel, i) => {
+                    mainCtx.save();
+                    
+                    // Multiply offsets by zoomFactor to prevent overlap
+                    mainCtx.translate(
+                        centerX + (panel.offsetX * zoomFactor) + panX, 
+                        centerY + (panel.offsetY * zoomFactor) + panY
+                    );
+                    
+                    const scaleRatio = panel.scale * zoomFactor;
+                    mainCtx.scale(scaleRatio, scaleRatio);
+                    
+                    drawCenter(mainCtx, i, scaleRatio);
+                    
+                    if (i === 0) {
+                        mainCtx.drawImage(offCanvasCenter, drawX, drawY, drawW, drawH);
+                    } else {
+                        mainCtx.drawImage(offCanvasOuter, drawX, drawY, drawW, drawH);
+                    }
+                    
+                    mainCtx.restore();
+                });
+
+                requestAnimationFrame(render);
+            }
+
+            /* ── Interaction (Pan) ────────────────────────── */
+            const wrap = document.getElementById('canvas-wrap');
+            wrap.addEventListener('mousedown', e => {
+                isDragging = true;
+                lastDragX = e.clientX;
+                lastDragY = e.clientY;
+            });
+            window.addEventListener('mousemove', e => {
+                if (!isDragging) return;
+                panX += (e.clientX - lastDragX);
+                panY += (e.clientY - lastDragY);
+                lastDragX = e.clientX;
+                lastDragY = e.clientY;
+            });
+            window.addEventListener('mouseup', () => isDragging = false);
+            window.addEventListener('mouseleave', () => isDragging = false);
+
+            /* ── Controls API ─────────────────────────────── */
+            window.setPatternCenter = (p) => {
+                patternCenter = p;
+                updateButtonStates('center-btns', p);
+                
+                const spd = patternSpeedsCenter[patternCenter];
+                document.getElementById('speed-slider-center').value = spd;
+                document.getElementById('spd-lbl-center').textContent = spd.toFixed(1) + 'x';
+            };
+
+            window.setPatternOuter = (p) => {
+                patternOuter = p;
+                updateButtonStates('outer-btns', p);
+                
+                const spd = patternSpeedsOuter[patternOuter];
+                document.getElementById('speed-slider-outer').value = spd;
+                document.getElementById('spd-lbl-outer').textContent = spd.toFixed(1) + 'x';
+            };
+            
+            window.setPatternBgStar = (p, btn) => {
+                patternBgStar = p;
+                const btns = document.getElementById('bgstar-btns').querySelectorAll('.ctrl-btn');
+                btns.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+            }
+            
+            function updateButtonStates(containerId, activePattern) {
+                const container = document.getElementById(containerId);
+                const btns = container.querySelectorAll('.ctrl-btn');
+                btns.forEach((b, i) => {
+                    if (i === activePattern) b.classList.add('active');
+                    else b.classList.remove('active');
+                });
+            }
+
+            window.changeSpeedCenter = (val) => {
+                const spd = parseFloat(val);
+                patternSpeedsCenter[patternCenter] = spd;
+                document.getElementById('spd-lbl-center').textContent = spd.toFixed(1) + 'x';
+                const btn = document.getElementById(`btn-c-${patternCenter}`);
+                if (btn) btn.querySelector('.spd-badge').textContent = spd.toFixed(1) + 'x';
+            };
+            
+            window.changeSpeedOuter = (val) => {
+                const spd = parseFloat(val);
+                patternSpeedsOuter[patternOuter] = spd;
+                document.getElementById('spd-lbl-outer').textContent = spd.toFixed(1) + 'x';
+                const btn = document.getElementById(`btn-o-${patternOuter}`);
+                if (btn) btn.querySelector('.spd-badge').textContent = spd.toFixed(1) + 'x';
+            };
+            
+            window.cycleSpeedBgStar = () => {
+                speedIdxBgStar = (speedIdxBgStar + 1) % SPEEDS.length;
+                document.getElementById('spd-lbl-bgstar').textContent = SPEED_LABELS[speedIdxBgStar];
+            };
+            
+            window.toggleBgStar = (checked) => {
+                showBgStar = checked;
+            }
+            
+            window.changeBgStarSize = (val) => {
+                bgStarSizeFactor = parseFloat(val);
+                document.getElementById('bgstar-size-lbl').textContent = bgStarSizeFactor.toFixed(2);
+                generateBgStarLeds();
+            };
+
+            window.changeZoom = (val) => {
+                zoomFactor = parseFloat(val);
+                document.getElementById('zoom-lbl').textContent = zoomFactor.toFixed(1) + 'x';
+            };
+            
+            window.changeGap = (val) => {
+                panelGap = parseInt(val, 10);
+                document.getElementById('gap-lbl').textContent = val + 'px';
+                resize();
+            }
+            
+            window.resetView = () => {
+                zoomFactor = 1.0;
+                panX = 0;
+                panY = 0;
+                document.getElementById('zoom-slider').value = 1.0;
+                document.getElementById('zoom-lbl').textContent = '1.0x';
+            };
+            
+            window.changeSize = (val) => {
+                BUDDHA_R = parseInt(val, 10);
+                recalcLayout();
+            };
+            
+            window.toggleAuto = (checked) => {
+                isAuto = checked;
+                if (isAuto) lastAutoTime = Date.now();
+            };
+            
+            window.changeInterval = (val) => {
+                autoInterval = parseInt(val, 10) * 1000;
+                document.getElementById('interval-lbl').textContent = val + 's';
+            };
+
+            /* ── Responsive Canvas Sizing ─────────────────── */
+            function resize() {
+                const avW = wrap.clientWidth;
+                const avH = wrap.clientHeight;
+                
+                canvas.width = avW;
+                canvas.height = avH;
+                
+                const outerScale = 0.55; 
+                // The maxRadius calculates how far from the center the outer panels reach, used to shrink the whole thing to fit the screen
+                const maxRadius = TOTAL_R + (TOTAL_R * outerScale * 2) + panelGap;
+                const scaleToFit = Math.min(avW / (maxRadius * 2.1), avH / (maxRadius * 2.1));
+                
+                const dist = (TOTAL_R + (TOTAL_R * outerScale) + panelGap) * scaleToFit;
+                
+                panels = [{ offsetX: 0, offsetY: 0, scale: scaleToFit }]; // Center Panel
+                for (let i = 0; i < 8; i++) {
+                    const angle = (i / 8) * Math.PI * 2 - Math.PI / 2;
+                    panels.push({
+                        offsetX: Math.cos(angle) * dist,
+                        offsetY: Math.sin(angle) * dist,
+                        scale: outerScale * scaleToFit
+                    });
+                }
+            }
+
+            /* ── Boot ─────────────────────────────────────── */
+            generateUI();
+            recalcLayout(); // Triggers generateLeds, generateBgStarLeds, and resize
+            window.addEventListener('resize', resize);
+            render();
+        })();
+    </script>
+</body>
+</html>

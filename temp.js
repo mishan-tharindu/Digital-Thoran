@@ -1,0 +1,635 @@
+
+        (() => {
+            'use strict';
+
+            const canvas = document.getElementById('led-canvas');
+            const ctx = canvas.getContext('2d');
+
+            /* ── State & Layout ──────────────────────────── */
+            const RING_SPACING = 16;
+            const DOT_GAP = 14.8;
+            const NUM_RINGS = 17;
+            
+            let BUDDHA_R = 180;
+            let RING_START, LAST_RING_R, SOLID_R, OUTER_R, TOTAL_R, LW, LH, CX, CY;
+            
+            function recalcLayout() {
+                RING_START = BUDDHA_R + 22;
+                LAST_RING_R = RING_START + (NUM_RINGS - 1) * RING_SPACING;
+                SOLID_R = LAST_RING_R + 14;
+                OUTER_R = SOLID_R + 10;
+                TOTAL_R = OUTER_R + 18;
+                LW = Math.ceil(TOTAL_R * 2);
+                LH = Math.ceil(TOTAL_R * 2);
+                CX = Math.floor(LW / 2);
+                CY = Math.floor(LH / 2);
+                canvas.width = LW;
+                canvas.height = LH;
+                generateLeds();
+                if (typeof resize === 'function') resize();
+            }
+            
+            let frame = 0;
+            let currentPattern = 0;
+            let patternSpeeds = new Array(18).fill(1.0);
+
+            /* ── Asset ───────────────────────────────────── */
+            const buddhaImg = new Image();
+            buddhaImg.src = 'assets/buddha_center.png';
+
+            /* ── LED Data ────────────────────────────────── */
+            const leds = [];
+
+            const HUE = {
+                green: 128, white: 0, red: 355, yellow: 52,
+                blue: 200, pink: 325, cyan: 180, orange: 32
+            };
+            const SAT = {
+                green: 100, white: 0, red: 100, yellow: 100,
+                blue: 100, pink: 100, cyan: 100, orange: 100
+            };
+            const LIT = {
+                green: 46, white: 95, red: 52, yellow: 57,
+                blue: 55, pink: 62, cyan: 58, orange: 58
+            };
+
+            /* ── Generate LED Positions ──────────────────── */
+            function generateLeds() {
+                leds.length = 0;
+                let r = RING_START;
+
+                for (let ring = 0; ring < NUM_RINGS; ring++) {
+                    const circ = 2 * Math.PI * r;
+                    const count = Math.round(circ / DOT_GAP);
+
+                    for (let i = 0; i < count; i++) {
+                        const angle = (i / count) * Math.PI * 2;
+                        const x = CX + r * Math.cos(angle);
+                        const y = CY + r * Math.sin(angle);
+
+                        if (x < 3 || x > LW - 3 || y < 3 || y > LH - 3) continue;
+
+                        let col;
+                        if (ring === NUM_RINGS - 1) {
+                            const pal = ['red', 'orange', 'yellow', 'green', 'cyan', 'blue', 'pink', 'white'];
+                            col = pal[Math.floor(i * pal.length / count) % pal.length];
+                        } else if (ring === 0) {
+                            col = i % 3 === 0 ? 'white' : 'green';
+                        } else {
+                            col = i % 5 === 0 ? 'white' : 'green';
+                        }
+
+                        leds.push({
+                            x, y,
+                            base: col,
+                            active: col,
+                            ring,
+                            idx: i,
+                            count,
+                            bright: 0.75,
+                            flick: Math.random() * Math.PI * 2
+                        });
+                    }
+
+                    r += RING_SPACING;
+                }
+            }
+
+            /* ── Draw a Single LED ───────────────────────── */
+            function drawLED(led) {
+                const { x, y, active, bright } = led;
+                if (bright < 0.03) return;
+
+                const col = active || 'green';
+                const hue = HUE[col] ?? 128;
+                const sat = SAT[col] ?? 100;
+                const lit = LIT[col] ?? 50;
+
+                const gr = 9.5 * bright;
+                const grad = ctx.createRadialGradient(x, y, 0, x, y, gr);
+                grad.addColorStop(0, `hsla(${hue},${sat}%,${lit + 22}%,${bright})`);
+                grad.addColorStop(0.32, `hsla(${hue},${sat}%,${lit}%,${bright * 0.42})`);
+                grad.addColorStop(1, `hsla(${hue},${sat}%,${lit}%,0)`);
+                ctx.fillStyle = grad;
+                ctx.beginPath();
+                ctx.arc(x, y, gr, 0, Math.PI * 2);
+                ctx.fill();
+
+                ctx.fillStyle = `hsla(${hue},${sat}%,92%,${Math.min(1, bright + 0.08)})`;
+                ctx.beginPath();
+                ctx.arc(x, y, 3.1, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            /* ── Update LED Brightnesses ─────────────────── */
+            function updateLeds() {
+                const speed = patternSpeeds[currentPattern];
+                const t = frame * speed;
+
+                leds.forEach(led => {
+                    const { ring, idx, count, base, flick } = led;
+                    let b = 0.7;
+
+                    switch (currentPattern) {
+
+                        case 0: // Ripple
+                            b = Math.sin(t * 0.05 - ring * 0.48 + idx * 0.013) * 0.38 + 0.62;
+                            break;
+
+                        case 1: // Chase
+                            {
+                                const ph = (t * 0.1) % NUM_RINGS;
+                                const d = Math.abs(ring - ph);
+                                b = d < 1.9 ? (1 - d / 1.9) * 0.92 + 0.08 : 0.06;
+                                break;
+                            }
+
+                        case 2: // Pulse
+                            b = Math.sin(t * 0.055) * 0.42 + 0.58;
+                            break;
+
+                        case 3: // Rainbow
+                            {
+                                const ang = Math.atan2(led.y - CY, led.x - CX);
+                                const adeg = ((ang * 180 / Math.PI) + 360) % 360;
+                                const h = (adeg + t * 1.2) % 360;
+                                if (h < 45) led.active = 'red';
+                                else if (h < 90) led.active = 'orange';
+                                else if (h < 135) led.active = 'yellow';
+                                else if (h < 180) led.active = 'green';
+                                else if (h < 225) led.active = 'cyan';
+                                else if (h < 270) led.active = 'blue';
+                                else if (h < 315) led.active = 'pink';
+                                else led.active = 'red';
+                                b = Math.sin(t * 0.05 - ring * 0.22) * 0.32 + 0.68;
+                                break;
+                            }
+
+                        case 4: // Twinkle
+                            if (Math.random() > 0.993) b = 1.0;
+                            else b = led.bright * 0.88 + (Math.sin(t * 0.04 + flick) * 0.22 + 0.56) * 0.12;
+                            break;
+
+                        case 5: // Scan
+                            {
+                                const scanAngle = (t * 0.06) % (Math.PI * 2);
+                                const ledAngle = Math.atan2(led.y - CY, led.x - CX);
+                                let diff = Math.abs(ledAngle - scanAngle);
+                                if (diff > Math.PI) diff = Math.PI * 2 - diff;
+                                b = diff < 0.35 ? 1 - diff / 0.35 * 0.15 :
+                                    Math.max(0.06, 1 - diff * 1.4);
+                                break;
+                            }
+
+                        case 6: // Sun Leaf
+                            {
+                                const PETAL_N = 14;
+                                const petalSpan = Math.PI * 2 / PETAL_N;
+                                if (ring < 3) {
+                                    led.active = 'red';
+                                    b = Math.sin(t * 0.05 - ring * 0.3) * 0.32 + 0.68;
+                                } else {
+                                    const angle = Math.atan2(led.y - CY, led.x - CX);
+                                    const prog = ring / (NUM_RINGS - 1);
+                                    const shiftedAngle = angle - prog * 0.5;
+                                    let normAngle = (shiftedAngle % petalSpan + petalSpan) % petalSpan;
+                                    let distAngle = Math.abs(normAngle - petalSpan / 2);
+                                    const maxAngle = (0.12 + prog * 0.65) * (petalSpan / 2);
+                                    if (distAngle <= maxAngle) {
+                                        led.active = 'cyan';
+                                        b = Math.sin(t * 0.12 - Math.floor((shiftedAngle + Math.PI * 2) / petalSpan) * 0.4) * 0.45 + 0.55;
+                                    } else {
+                                        led.active = 'white';
+                                        b = 0.06;
+                                    }
+                                }
+                                break;
+                            }
+
+                        case 7: // Turbo
+                            {
+                                const PETAL_N = 8;
+                                const petalSpan = Math.PI * 2 / PETAL_N;
+                                if (ring < 4) {
+                                    led.active = 'pink';
+                                    b = Math.sin(t * 0.05 - ring * 0.3) * 0.32 + 0.68;
+                                } else {
+                                    const angle = Math.atan2(led.y - CY, led.x - CX);
+                                    const prog = ring / (NUM_RINGS - 1);
+                                    const shiftedAngle = angle - prog * 1.5;
+                                    let normAngle = (shiftedAngle % petalSpan + petalSpan) % petalSpan;
+                                    let distAngle = Math.abs(normAngle - petalSpan / 2);
+                                    const maxAngle = (0.2 + prog * 0.45) * (petalSpan / 2);
+                                    if (distAngle <= maxAngle) {
+                                        led.active = 'green';
+                                        b = Math.sin(t * 0.15 - Math.floor((shiftedAngle + Math.PI * 2) / petalSpan) * 0.4) * 0.45 + 0.55;
+                                    } else {
+                                        led.active = 'white';
+                                        b = 0.06;
+                                    }
+                                }
+                                break;
+                            }
+
+                        case 8: // Spiral
+                            {
+                                const angle = Math.atan2(led.y - CY, led.x - CX);
+                                const prog = ring / (NUM_RINGS - 1);
+                                const shiftedAngle = angle - prog * Math.PI * 1.8;
+                                let normAngle = (shiftedAngle % (Math.PI * 2) + Math.PI * 2) % (Math.PI * 2);
+                                const gap = 0.15;
+                                if (normAngle > gap && normAngle < Math.PI - gap) {
+                                    led.active = 'red';
+                                    b = Math.sin(t * 0.1 - ring * 0.2) * 0.3 + 0.7;
+                                } else if (normAngle > Math.PI + gap && normAngle < Math.PI * 2 - gap) {
+                                    led.active = 'white';
+                                    b = Math.sin(t * 0.1 - ring * 0.2 + Math.PI) * 0.3 + 0.7;
+                                } else {
+                                    led.active = 'white';
+                                    b = 0.04;
+                                }
+                                break;
+                            }
+
+                        case 9: // Galaxy
+                            {
+                                const PETAL_N = 4;
+                                const petalSpan = Math.PI * 2 / PETAL_N;
+                                if (ring < 3) {
+                                    led.active = 'yellow';
+                                    b = Math.sin(t * 0.05 - ring * 0.3) * 0.32 + 0.68;
+                                } else {
+                                    const angle = Math.atan2(led.y - CY, led.x - CX);
+                                    const prog = ring / (NUM_RINGS - 1);
+                                    const shiftedAngle = angle - prog * Math.PI * 1.2;
+                                    let normAngle = (shiftedAngle % petalSpan + petalSpan) % petalSpan;
+                                    let distAngle = Math.abs(normAngle - petalSpan / 2);
+                                    const maxAngle = (0.2 + prog * 0.4) * (petalSpan / 2);
+                                    if (distAngle <= maxAngle) {
+                                        led.active = 'blue';
+                                        b = Math.sin(t * 0.15 - Math.floor((shiftedAngle + Math.PI * 2) / petalSpan) * 0.4) * 0.45 + 0.55;
+                                    } else {
+                                        led.active = 'red';
+                                        b = Math.sin(t * 0.15 - ring * 0.2 + Math.PI) * 0.45 + 0.55;
+                                    }
+                                }
+                                break;
+                            }
+
+                        case 10: // Diamond
+                            {
+                                const maskScale = LAST_RING_R / 412;
+                                const dx = Math.abs(led.x - CX) / maskScale;
+                                const dy = Math.abs(led.y - CY) / maskScale;
+                                const d = dx + dy;
+                                const cx = Math.abs(dx - 220);
+                                const cy = Math.abs(dy - 220);
+                                const cd = cx + cy;
+                                if (cd < 15) {
+                                    led.active = 'white';
+                                    b = 0.04;
+                                } else if (cd < 80) {
+                                    led.active = 'green';
+                                    b = Math.sin(t * 0.08) * 0.2 + 0.8;
+                                } else if (cd < 95) {
+                                    led.active = 'white';
+                                    b = 0.04;
+                                } else {
+                                    const exp = (t * 1.5) % 150;
+                                    const band = ((d - exp) % 150 + 150) % 150;
+                                    if (band < 15) {
+                                        led.active = 'white';
+                                        b = 0.9;
+                                    } else if (band < 75) {
+                                        led.active = 'red';
+                                        b = 0.8;
+                                    } else if (band < 90) {
+                                        led.active = 'white';
+                                        b = 0.9;
+                                    } else {
+                                        led.active = 'white';
+                                        b = 0.04;
+                                    }
+                                }
+                                break;
+                            }
+
+                        case 11: // Tilted
+                            {
+                                const maskScale = LAST_RING_R / 412;
+                                const rawDx = (led.x - CX) / maskScale;
+                                const rawDy = (led.y - CY) / maskScale;
+                                const d = Math.abs(rawDx) + Math.abs(rawDy);
+                                if (d > 160 && d < 250) {
+                                    led.active = rawDx * rawDy > 0 ? 'red' : 'blue';
+                                    b = 0.8 + Math.sin(t * 0.2) * 0.2;
+                                } else {
+                                    led.active = 'yellow';
+                                    b = 0.5 + Math.sin(t * 0.1 - d * 0.02) * 0.3;
+                                }
+                                break;
+                            }
+
+                        case 12: // Cross
+                            {
+                                const maskScale = LAST_RING_R / 412;
+                                const dx = Math.abs(led.x - CX) / maskScale;
+                                const dy = Math.abs(led.y - CY) / maskScale;
+                                const d = dx + dy;
+                                if (d < 110) {
+                                    led.active = 'white'; b = 0.04;
+                                } else if (d < 150) {
+                                    led.active = 'red'; b = 0.8 + Math.sin(t * 0.15) * 0.2;
+                                } else if (dx > 170 && dy > 170) {
+                                    led.active = 'yellow'; b = 0.8 + Math.sin(t * 0.1 + dx * 0.01) * 0.2;
+                                } else {
+                                    led.active = 'blue'; b = 0.6 + Math.sin(t * 0.05 - d * 0.02) * 0.4;
+                                }
+                                break;
+                            }
+
+                        case 13: // Lattice
+                            {
+                                const maskScale = LAST_RING_R / 412;
+                                const u = (led.x - CX) / maskScale;
+                                const v = (led.y - CY) / maskScale;
+                                const ru = u + v;
+                                const rv = u - v;
+                                const s1 = Math.sin(ru * 0.04 + t * 0.08);
+                                const s2 = Math.sin(rv * 0.04 - t * 0.06);
+                                const prod = s1 * s2;
+                                if (prod > 0.2) {
+                                    led.active = 'cyan';
+                                    b = prod * 1.5;
+                                } else if (prod < -0.2) {
+                                    led.active = 'red';
+                                    b = -prod * 1.5;
+                                } else {
+                                    led.active = 'white';
+                                    b = 0.04;
+                                }
+                                break;
+                            }
+
+                        case 14: // Buddha Aura
+                            {
+                                if (ring < 3) {
+                                    led.active = 'yellow';
+                                    b = 0.8 + Math.sin(t * 0.15 - ring * 0.5) * 0.2;
+                                } else {
+                                    const wave = ring * 0.5 - t * 0.15;
+                                    const auraColors = ['blue', 'yellow', 'red', 'white', 'orange'];
+                                    const cIdx = Math.floor(((wave % 5) + 5) % 5);
+                                    led.active = auraColors[cIdx];
+                                    b = Math.sin(wave * Math.PI) * 0.35 + 0.65;
+                                }
+                                break;
+                            }
+                        
+                        case 15: // Dharma Wheel
+                            {
+                                const PETAL_N = 8;
+                                const petalSpan = Math.PI * 2 / PETAL_N;
+                                const angle = Math.atan2(led.y - CY, led.x - CX);
+                                const shiftedAngle = angle - Math.PI / 2;
+                                let normAngle = (shiftedAngle % petalSpan + petalSpan) % petalSpan;
+                                const spokeGap = 0.12; 
+                                if (normAngle < spokeGap || normAngle > petalSpan - spokeGap) {
+                                    led.active = 'yellow';
+                                    b = 0.7;
+                                } else {
+                                    const wave = ring - t * 0.35;
+                                    const cycle = ((wave % 6) + 6) % 6;
+                                    const bgColors = ['cyan', 'pink', 'blue', 'green'];
+                                    const colorIdx = Math.floor(t * 0.03) % bgColors.length;
+                                    if (cycle < 2) {
+                                        led.active = 'white';
+                                        b = 0.95;
+                                    } else {
+                                        led.active = bgColors[colorIdx];
+                                        b = 0.15;
+                                    }
+                                }
+                                break;
+                            }
+
+                        case 16: // Dharma Sweep
+                            {
+                                const PETAL_N = 8;
+                                const petalSpan = Math.PI * 2 / PETAL_N;
+                                const angle = Math.atan2(led.y - CY, led.x - CX);
+                                const shiftedAngle = angle - Math.PI / 2;
+                                let normAngle = (shiftedAngle % petalSpan + petalSpan) % petalSpan;
+                                const spokeGap = 0.10; 
+                                if (normAngle < spokeGap || normAngle > petalSpan - spokeGap) {
+                                    led.active = 'yellow';
+                                    b = 0.8; 
+                                } else {
+                                    let acwAngle = (-angle - Math.PI / 2 + Math.PI * 4) % (Math.PI * 2);
+                                    let sweepPhase = (t * 0.35) % (Math.PI * 2);
+                                    let dist = (sweepPhase - acwAngle + Math.PI * 2) % (Math.PI * 2);
+                                    if (dist < Math.PI) {
+                                        if (ring >= 2 && (ring - 2) % 6 < 4) {
+                                            led.active = 'blue';
+                                            b = Math.max(0.05, 1.0 - (dist / Math.PI));
+                                        } else {
+                                            led.active = 'white';
+                                            b = 0.02;
+                                        }
+                                    } else {
+                                        led.active = 'white';
+                                        b = 0.02;
+                                    }
+                                }
+                                break;
+                            }
+                        
+                        case 17: // Parallel Rays
+                            {
+                                const PETAL_N = 8;
+                                const petalSpan = Math.PI * 2 / PETAL_N;
+                                const dx = led.x - CX;
+                                const dy = led.y - CY;
+                                const angle = Math.atan2(dy, dx);
+                                const shiftedAngle = angle - Math.PI / 2;
+                                let normAngle = (shiftedAngle % petalSpan + petalSpan) % petalSpan;
+                                
+                                const spokeGap = 0.10; 
+                                if (normAngle < spokeGap || normAngle > petalSpan - spokeGap) {
+                                    led.active = 'yellow';
+                                    b = 0.8;
+                                } else {
+                                    let deltaAngle = Math.abs(normAngle - petalSpan / 2);
+                                    let d = Math.hypot(dx, dy) * Math.sin(deltaAngle);
+                                    
+                                    let lineSpacing = 60;
+                                    let lineWidth = 9;
+                                    let distToClosestLine = Math.abs(Math.round(d / lineSpacing) * lineSpacing - d);
+                                    
+                                    if (distToClosestLine < lineWidth) {
+                                        let sliceIdx = Math.floor((shiftedAngle + Math.PI * 2) / petalSpan);
+                                        let lineIdx = Math.round(d / lineSpacing);
+                                        let hash = Math.abs(Math.sin(sliceIdx * 12.9898 + lineIdx * 78.233));
+                                        
+                                        if (Math.sin(t * 0.5 + hash * 10) > 0.3) {
+                                            led.active = 'white';
+                                            b = 1.0;
+                                        } else {
+                                            led.active = 'cyan';
+                                            b = 0.08;
+                                        }
+                                    } else {
+                                        led.active = 'cyan';
+                                        b = 0.08;
+                                    }
+                                }
+                                break;
+                            }
+                    }
+
+                    if (currentPattern < 6 && currentPattern !== 3) {
+                        led.active = base;
+                        if (base === 'white') {
+                            b = Math.min(1, b * 1.18 + Math.sin(t * 0.28 + flick) * 0.1);
+                        }
+                    }
+                    led.bright = Math.max(0, Math.min(1, b));
+                });
+            }
+
+            /* ── Background ──────────────────────────────── */
+            function drawBg() {
+                const g = ctx.createRadialGradient(CX, CY, 55, CX, CY, 570);
+                g.addColorStop(0, '#030e1e');
+                g.addColorStop(0.38, '#010b14');
+                g.addColorStop(1, '#000105');
+                ctx.fillStyle = g;
+                ctx.fillRect(0, 0, LW, LH);
+                for (let i = 0; i < 80; i++) {
+                    const sx = (Math.sin(i * 4325.23) * 0.5 + 0.5) * LW;
+                    const sy = (Math.cos(i * 1234.56) * 0.5 + 0.5) * LH;
+                    const a = Math.sin(frame * 0.016 + i * 1.9) * 0.1 + 0.06;
+                    ctx.fillStyle = `rgba(255,255,255,${a})`;
+                    ctx.beginPath();
+                    ctx.arc(sx, sy, 0.7, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            }
+
+            /* ── Center Buddha Circle ─────────────────────── */
+            function drawCenter() {
+                const bg = ctx.createRadialGradient(CX, CY - 20, 10, CX, CY, BUDDHA_R);
+                bg.addColorStop(0, '#241000');
+                bg.addColorStop(0.65, '#120800');
+                bg.addColorStop(1, '#060300');
+                ctx.fillStyle = bg;
+                ctx.beginPath();
+                ctx.arc(CX, CY, BUDDHA_R, 0, Math.PI * 2);
+                ctx.fill();
+                if (buddhaImg.complete && buddhaImg.naturalWidth > 0) {
+                    ctx.save();
+                    ctx.beginPath();
+                    ctx.arc(CX, CY, BUDDHA_R - 5, 0, Math.PI * 2);
+                    ctx.clip();
+                    const d = (BUDDHA_R - 5) * 2;
+                    const sc = Math.max(d / buddhaImg.naturalWidth, d / buddhaImg.naturalHeight);
+                    const dw = buddhaImg.naturalWidth * sc;
+                    const dh = buddhaImg.naturalHeight * sc;
+                    ctx.drawImage(buddhaImg, CX - dw / 2, CY - dh / 2, dw, dh);
+                    ctx.restore();
+                }
+                const pulse = Math.sin(frame * 0.04) * 8;
+                ctx.strokeStyle = '#ffd700';
+                ctx.lineWidth = 6;
+                ctx.shadowColor = '#ffd700';
+                ctx.shadowBlur = 18 + pulse;
+                ctx.beginPath();
+                ctx.arc(CX, CY, BUDDHA_R, 0, Math.PI * 2);
+                ctx.stroke();
+                ctx.shadowBlur = 0;
+            }
+
+            /* ── Main Render Loop ─────────────────────────── */
+            function render() {
+                frame++;
+                ctx.clearRect(0, 0, LW, LH);
+                drawBg();
+                drawCenter();
+                updateLeds();
+                ctx.save();
+                ctx.globalCompositeOperation = 'screen';
+                leds.forEach(drawLED);
+                ctx.restore();
+                ctx.save();
+                const pulse = Math.sin(frame * 0.04) * 8;
+                ctx.strokeStyle = '#ffd700';
+                ctx.lineWidth = 4;
+                ctx.shadowColor = '#ffd700';
+                ctx.shadowBlur = 12 + pulse;
+                ctx.beginPath();
+                ctx.arc(CX, CY, SOLID_R, 0, Math.PI * 2);
+                ctx.stroke();
+                ctx.shadowBlur = 0;
+                // Outer dot ring
+                const OUTER_N = Math.floor((2 * Math.PI * OUTER_R) / 20);
+                const outerSpin = -frame * 0.003;
+
+                for (let i = 0; i < OUTER_N; i++) {
+                    const a = (i / OUTER_N) * Math.PI * 2 + outerSpin;
+                    const dx = CX + OUTER_R * Math.cos(a);
+                    const dy = CY + OUTER_R * Math.sin(a);
+                    const bright = 0.6 + Math.sin(frame * 0.1 + i * 0.3) * 0.4;
+
+                    ctx.fillStyle = '#ffd700';
+                    ctx.shadowColor = '#ffd700';
+                    ctx.shadowBlur = 5 * bright;
+
+                    ctx.beginPath();
+                    ctx.arc(dx, dy, 3.2, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+                ctx.restore();
+
+                requestAnimationFrame(render);
+            }
+
+            /* ── Controls API ─────────────────────────────── */
+            window.setPattern = (p, btn) => {
+                currentPattern = p;
+                document.querySelectorAll('[data-pat]').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                
+                // Restore the saved speed for this pattern
+                const spd = patternSpeeds[currentPattern];
+                document.getElementById('speed-slider').value = spd;
+                document.getElementById('spd-lbl').textContent = spd.toFixed(1) + 'x';
+            };
+
+            window.changeSpeed = (val) => {
+                const spd = parseFloat(val);
+                patternSpeeds[currentPattern] = spd;
+                document.getElementById('spd-lbl').textContent = spd.toFixed(1) + 'x';
+            };
+
+            window.changeSize = (val) => {
+                BUDDHA_R = parseInt(val, 10);
+                recalcLayout();
+            };
+
+            /* ── Responsive Canvas Sizing ─────────────────── */
+            function resize() {
+                const avW = window.innerWidth;
+                const avH = window.innerHeight - 52; // control bar height
+                const sz = Math.min(avW, avH) * 0.97;
+                canvas.style.width = sz + 'px';
+                canvas.style.height = sz + 'px';
+                canvas.width = LW;
+                canvas.height = LH;
+            }
+
+            /* ── Boot ─────────────────────────────────────── */
+            recalcLayout();
+            window.addEventListener('resize', resize);
+            render();
+        })();
+    
