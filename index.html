@@ -1,18 +1,23 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Digital Vesak Thoran - Interactive LED Pandol</title>
-    <meta name="description" content="An interactive, high-fidelity digital Vesak Thoran (Pandol) featuring synchronized LED lighting patterns, background music, and interactive Jataka story narrations.">
+    <meta name="description"
+        content="An interactive, high-fidelity digital Vesak Thoran (Pandol) featuring synchronized LED lighting patterns, background music, and interactive Jataka story narrations.">
     <!-- Google Fonts: Outfit for UI, Noto Serif Sinhala for Sinhala text -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Abhaya+Libre:wght@500;700;800&family=Noto+Serif+Sinhala:wght@400;700&family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Abhaya+Libre:wght@500;700;800&family=Noto+Serif+Sinhala:wght@400;700&family=Outfit:wght@300;400;600;800&display=swap"
+        rel="stylesheet">
     <!-- FontAwesome for control icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="index.css">
 </head>
+
 <body>
     <!-- Atmospheric Night Background -->
     <div class="sky-container">
@@ -83,7 +88,8 @@
                         <span>Speed</span>
                         <span id="val-speed">1.0x</span>
                     </div>
-                    <input type="range" id="slider-speed" min="0.2" max="3" step="0.1" value="1.0" class="custom-slider">
+                    <input type="range" id="slider-speed" min="0.2" max="3" step="0.1" value="1.0"
+                        class="custom-slider">
                 </div>
 
                 <div class="slider-control">
@@ -141,17 +147,21 @@
 
             <div class="control-group">
                 <h3><i class="fa-solid fa-microphone-lines"></i> Storyteller & Viridu</h3>
-                <p class="story-intro">Play traditional Sinhala Viridu poem chanting and Raban drumbeats synced with the Jataka chapters.</p>
+                <p class="story-intro">Play traditional Sinhala Viridu poem chanting and Raban drumbeats synced with the
+                    Jataka chapters.</p>
                 <button class="btn btn-audio" id="btn-viridu-play" style="margin-bottom: 12px;">
                     <i class="fa-solid fa-play"></i> Play Viridu (Sinhala)
                 </button>
                 <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
                     <span style="font-size: 0.85rem; color: var(--text-secondary);">Auto Storytelling Mode</span>
-                    <input type="checkbox" id="chk-autoplay" style="cursor: pointer; width: 18px; height: 18px; accent-color: var(--accent-blue);">
+                    <input type="checkbox" id="chk-autoplay"
+                        style="cursor: pointer; width: 18px; height: 18px; accent-color: var(--accent-blue);">
                 </div>
                 <div style="display: flex; gap: 8px; margin-bottom: 15px;">
-                    <button class="btn btn-audio" id="btn-viridu-prev" style="flex: 1; padding: 8px 10px;"><i class="fa-solid fa-backward"></i> Prev</button>
-                    <button class="btn btn-audio" id="btn-viridu-next" style="flex: 1; padding: 8px 10px;">Next <i class="fa-solid fa-forward"></i></button>
+                    <button class="btn btn-audio" id="btn-viridu-prev" style="flex: 1; padding: 8px 10px;"><i
+                            class="fa-solid fa-backward"></i> Prev</button>
+                    <button class="btn btn-audio" id="btn-viridu-next" style="flex: 1; padding: 8px 10px;">Next <i
+                            class="fa-solid fa-forward"></i></button>
                 </div>
             </div>
 
@@ -166,7 +176,8 @@
                                 <input type="file" class="input-panel-img" data-panel="0" accept="image/*">
                                 <i class="fa-solid fa-cloud-arrow-up"></i>
                             </label>
-                            <button class="btn-reset-img" data-panel="0" title="Reset to default"><i class="fa-solid fa-rotate-left"></i></button>
+                            <button class="btn-reset-img" data-panel="0" title="Reset to default"><i
+                                    class="fa-solid fa-rotate-left"></i></button>
                         </div>
                     </div>
                     <div class="uploader-item">
@@ -176,7 +187,8 @@
                                 <input type="file" class="input-panel-img" data-panel="1" accept="image/*">
                                 <i class="fa-solid fa-cloud-arrow-up"></i>
                             </label>
-                            <button class="btn-reset-img" data-panel="1" title="Reset to default"><i class="fa-solid fa-rotate-left"></i></button>
+                            <button class="btn-reset-img" data-panel="1" title="Reset to default"><i
+                                    class="fa-solid fa-rotate-left"></i></button>
                         </div>
                     </div>
                     <div class="uploader-item">
@@ -186,7 +198,8 @@
                                 <input type="file" class="input-panel-img" data-panel="2" accept="image/*">
                                 <i class="fa-solid fa-cloud-arrow-up"></i>
                             </label>
-                            <button class="btn-reset-img" data-panel="2" title="Reset to default"><i class="fa-solid fa-rotate-left"></i></button>
+                            <button class="btn-reset-img" data-panel="2" title="Reset to default"><i
+                                    class="fa-solid fa-rotate-left"></i></button>
                         </div>
                     </div>
                     <div class="uploader-item">
@@ -196,7 +209,8 @@
                                 <input type="file" class="input-panel-img" data-panel="3" accept="image/*">
                                 <i class="fa-solid fa-cloud-arrow-up"></i>
                             </label>
-                            <button class="btn-reset-img" data-panel="3" title="Reset to default"><i class="fa-solid fa-rotate-left"></i></button>
+                            <button class="btn-reset-img" data-panel="3" title="Reset to default"><i
+                                    class="fa-solid fa-rotate-left"></i></button>
                         </div>
                     </div>
                     <div class="uploader-item">
@@ -206,7 +220,8 @@
                                 <input type="file" class="input-panel-img" data-panel="4" accept="image/*">
                                 <i class="fa-solid fa-cloud-arrow-up"></i>
                             </label>
-                            <button class="btn-reset-img" data-panel="4" title="Reset to default"><i class="fa-solid fa-rotate-left"></i></button>
+                            <button class="btn-reset-img" data-panel="4" title="Reset to default"><i
+                                    class="fa-solid fa-rotate-left"></i></button>
                         </div>
                     </div>
                     <div class="uploader-item">
@@ -216,7 +231,8 @@
                                 <input type="file" class="input-panel-img" data-panel="5" accept="image/*">
                                 <i class="fa-solid fa-cloud-arrow-up"></i>
                             </label>
-                            <button class="btn-reset-img" data-panel="5" title="Reset to default"><i class="fa-solid fa-rotate-left"></i></button>
+                            <button class="btn-reset-img" data-panel="5" title="Reset to default"><i
+                                    class="fa-solid fa-rotate-left"></i></button>
                         </div>
                     </div>
                     <div class="uploader-item">
@@ -226,7 +242,8 @@
                                 <input type="file" class="input-panel-img" data-panel="6" accept="image/*">
                                 <i class="fa-solid fa-cloud-arrow-up"></i>
                             </label>
-                            <button class="btn-reset-img" data-panel="6" title="Reset to default"><i class="fa-solid fa-rotate-left"></i></button>
+                            <button class="btn-reset-img" data-panel="6" title="Reset to default"><i
+                                    class="fa-solid fa-rotate-left"></i></button>
                         </div>
                     </div>
                     <div class="uploader-item">
@@ -236,7 +253,8 @@
                                 <input type="file" class="input-panel-img" data-panel="7" accept="image/*">
                                 <i class="fa-solid fa-cloud-arrow-up"></i>
                             </label>
-                            <button class="btn-reset-img" data-panel="7" title="Reset to default"><i class="fa-solid fa-rotate-left"></i></button>
+                            <button class="btn-reset-img" data-panel="7" title="Reset to default"><i
+                                    class="fa-solid fa-rotate-left"></i></button>
                         </div>
                     </div>
                     <div class="uploader-item">
@@ -246,7 +264,8 @@
                                 <input type="file" class="input-panel-img" data-panel="8" accept="image/*">
                                 <i class="fa-solid fa-cloud-arrow-up"></i>
                             </label>
-                            <button class="btn-reset-img" data-panel="8" title="Reset to default"><i class="fa-solid fa-rotate-left"></i></button>
+                            <button class="btn-reset-img" data-panel="8" title="Reset to default"><i
+                                    class="fa-solid fa-rotate-left"></i></button>
                         </div>
                     </div>
                 </div>
@@ -289,9 +308,14 @@
                     </button>
                 </div>
             </div>
-            
+
             <div class="sidebar-footer">
-                <a href="panel-display.html" class="btn btn-audio" style="margin-bottom: 15px; text-decoration: none; display: block; text-align: center;"><i class="fa-solid fa-square-full"></i> View Background Panel</a>
+                <a href="panel-display.html" class="btn btn-audio"
+                    style="margin-bottom: 10px; text-decoration: none; display: block; text-align: center;"><i
+                        class="fa-solid fa-square-full"></i> View Background Panel</a>
+                <a href="jataka-panel.html" class="btn btn-audio"
+                    style="margin-bottom: 15px; text-decoration: none; display: block; text-align: center; border-color: gold; color: gold;"><i
+                        class="fa-solid fa-rectangle-ad"></i> View Jataka Story Panel</a>
                 <p>Created with devotion for Vesak</p>
                 <span class="dev-tag">Antigravity AI</span>
             </div>
@@ -306,16 +330,19 @@
         <main class="canvas-viewport">
             <div class="canvas-wrapper">
                 <canvas id="thoran-canvas"></canvas>
-                
+
                 <!-- Viridu Lyrics Display Overlay -->
                 <div class="viridu-overlay-box" id="viridu-display-box">
-                    <div class="viridu-title"><i class="fa-solid fa-microphone-lines"></i> තෝරණ් විරිදු ගායනය (Viridu Chanting)</div>
-                    <div class="viridu-verse" id="viridu-lyrics-text">සුමන සමන් දෙව් රාජිඳු එදා...<br>බුදු හිමි හමුවී ආරාධනා...</div>
+                    <div class="viridu-title"><i class="fa-solid fa-microphone-lines"></i> තෝරණ් විරිදු ගායනය (Viridu
+                        Chanting)</div>
+                    <div class="viridu-verse" id="viridu-lyrics-text">සුමන සමන් දෙව් රාජිඳු එදා...<br>බුදු හිමි හමුවී
+                        ආරාධනා...</div>
                 </div>
 
                 <!-- Help Tip Overlay -->
                 <div class="interaction-hint">
-                    <i class="fa-solid fa-computer-mouse"></i> Click centerpiece to zoom and view Lord Buddha centerpiece
+                    <i class="fa-solid fa-computer-mouse"></i> Click centerpiece to zoom and view Lord Buddha
+                    centerpiece
                 </div>
             </div>
         </main>
@@ -335,27 +362,34 @@
                         <button class="tab-btn active" data-lang="en">English</button>
                         <button class="tab-btn" data-lang="si">සිංහල</button>
                     </div>
-                    
+
                     <div class="lang-content en active" id="story-content-en">
                         <h2 class="story-heading">Sumana Saman's Invitation</h2>
                         <h4 class="story-chapter">Chapter 1: The Divine Request</h4>
                         <p class="story-desc">
-                            God Sumana Saman, the guardian deity of Samanala Kanda (Adam's Peak), visits Lord Buddha during His visit to Kelaniya. Bowing with deep devotion, the deity invites Lord Buddha to climb the holy peak of Samanala Mountain and place His sacred footprint on the summit, establishing a place of worship for all generations.
+                            God Sumana Saman, the guardian deity of Samanala Kanda (Adam's Peak), visits Lord Buddha
+                            during His visit to Kelaniya. Bowing with deep devotion, the deity invites Lord Buddha to
+                            climb the holy peak of Samanala Mountain and place His sacred footprint on the summit,
+                            establishing a place of worship for all generations.
                         </p>
                     </div>
-                    
+
                     <div class="lang-content si" id="story-content-si">
                         <h2 class="story-heading">සුමන සමන් දෙවිඳුගේ ආරාධනාව</h2>
                         <h4 class="story-chapter">පළමු පරිච්ඡේදය: දිව්‍යමය ඇරයුම</h4>
                         <p class="story-desc">
-                            කැලණියට වැඩම කළ බුදුරජාණන් වහන්සේ හමුවන සමනල කඳු අධිපති සුමන සමන් දිව්‍ය රාජයා, උන්වහන්සේට ඉතා බැති සිතින් නමස්කාර කරයි. සමනල කඳු මුදුනට වැඩම කර එහි බුදු සිරි පා සටහන තබා, ලෝක සත්වයාට වැඳ පුදා ගැනීම සඳහා පූජනීය ස්ථානයක් බවට පත් කරන ලෙස දෙවිඳුන් ආරාධනා කරයි.
+                            කැලණියට වැඩම කළ බුදුරජාණන් වහන්සේ හමුවන සමනල කඳු අධිපති සුමන සමන් දිව්‍ය රාජයා, උන්වහන්සේට
+                            ඉතා බැති සිතින් නමස්කාර කරයි. සමනල කඳු මුදුනට වැඩම කර එහි බුදු සිරි පා සටහන තබා, ලෝක සත්වයාට
+                            වැඳ පුදා ගැනීම සඳහා පූජනීය ස්ථානයක් බවට පත් කරන ලෙස දෙවිඳුන් ආරාධනා කරයි.
                         </p>
                     </div>
-                    
+
                     <div class="modal-navigation">
-                        <button class="btn btn-nav" id="btn-story-prev"><i class="fa-solid fa-chevron-left"></i> Previous</button>
+                        <button class="btn btn-nav" id="btn-story-prev"><i class="fa-solid fa-chevron-left"></i>
+                            Previous</button>
                         <span class="story-page-indicator" id="story-page-num">1 / 8</span>
-                        <button class="btn btn-nav" id="btn-story-next">Next <i class="fa-solid fa-chevron-right"></i></button>
+                        <button class="btn btn-nav" id="btn-story-next">Next <i
+                                class="fa-solid fa-chevron-right"></i></button>
                     </div>
                 </div>
             </div>
@@ -380,4 +414,5 @@
     <script src="audio.js"></script>
     <script src="thoran.js"></script>
 </body>
+
 </html>

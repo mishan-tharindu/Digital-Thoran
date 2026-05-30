@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Digital LED Vesak Pandol – Jataka Story Panel</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Abhaya+Libre:wght@500;700;800&family=Noto+Serif+Sinhala:wght@400;700&family=Outfit:wght@300;400;600;800&display=swap"
+        rel="stylesheet">
+    <style>
+        *,
+        *::before,
+        *::after {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: transparent;
+            background-color: #000;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        .canvas-wrap {
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex: 1;
+            width: 100%;
+            height: 100%;
+        }
+
+        #led-canvas {
+            display: block;
+            background: transparent;
+        }
+
+        .glowing-text-overlay {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+            font-family: 'Noto Serif Sinhala', 'Abhaya Libre', sans-serif;
+            font-size: 48px;
+            /* Controlled dynamically by slider, starting at 48px */
+            font-weight: bold;
+            color: #ffffff;
+            text-align: center;
+            letter-spacing: 2px;
+            z-index: 10;
+            user-select: none;
+
+            /* Fully transparent background as requested */
+            background: transparent;
+            -webkit-text-stroke: 1.5px #000000;
+            /* Crisp black outline to stand out over the underlying dense LED grid */
+
+            animation: textPulse 2.2s ease-in-out infinite alternate;
+        }
+
+        @keyframes textPulse {
+            from {
+                text-shadow:
+                    0 0 10px #ffffff,
+                    0 0 20px #ff0088,
+                    0 0 35px #ff0088,
+                    0 0 50px #ff6600,
+                    0 0 80px #ff6600;
+                transform: translate(-50%, -50%) scale(0.97);
+            }
+
+            to {
+                text-shadow:
+                    0 0 15px #ffffff,
+                    0 0 25px #ff0088,
+                    0 0 45px #ff0088,
+                    0 0 65px #ff6600,
+                    0 0 95px #ff6600,
+                    0 0 120px #ff0088;
+                transform: translate(-50%, -50%) scale(1.03);
+            }
+        }
+
+        /* ── Controls bar ─────────────────────────── */
+        .controls-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 10px 16px 12px;
+            background: rgba(0, 5, 12, 0.88);
+            backdrop-filter: blur(14px);
+            border-top: 1px solid rgba(0, 200, 80, 0.15);
+        }
+
+        .controls-inner {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 12px;
+            width: 100%;
+        }
+
+        .pattern-grid-container {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+            justify-content: center;
+            max-height: 80px;
+            overflow-y: auto;
+            padding: 4px;
+            width: 100%;
+            max-width: 1100px;
+        }
+
+        .pattern-grid-container::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .pattern-grid-container::-webkit-scrollbar-thumb {
+            background: rgba(0, 200, 80, 0.4);
+            border-radius: 4px;
+        }
+
+        .ctrl-btn {
+            background: rgba(0, 60, 20, 0.3);
+            border: 1px solid rgba(0, 180, 70, 0.35);
+            color: #00dd60;
+            padding: 5px 15px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 12px;
+            font-family: 'Outfit', sans-serif;
+            transition: all 0.18s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            user-select: none;
+            white-space: nowrap;
+        }
+
+        .ctrl-btn:hover {
+            background: rgba(0, 120, 40, 0.4);
+            border-color: #00ee70;
+            color: #88ffaa;
+            box-shadow: 0 0 10px rgba(0, 220, 80, 0.3);
+        }
+
+        .ctrl-btn.active {
+            background: rgba(0, 150, 55, 0.45);
+            border-color: #00ff80;
+            color: #88ffaa;
+            box-shadow: 0 0 14px rgba(0, 255, 80, 0.4);
+        }
+
+        .ctrl-divider {
+            width: 1px;
+            height: 22px;
+            background: rgba(255, 255, 255, 0.08);
+            margin: 0 3px;
+        }
+
+        .ctrl-label {
+            color: rgba(255, 255, 255, 0.28);
+            font-size: 11px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="canvas-wrap">
+        <canvas id="led-canvas"></canvas>
+        <div class="glowing-text-overlay">රණ හංස ජාතකය</div>
+    </div>
+
+    <nav class="controls-bar">
+        <div class="pattern-grid-container" id="pattern-btns"></div>
+        <div class="controls-inner">
+            <span class="ctrl-label">Auto Cycle</span>
+            <button class="ctrl-btn" id="btn-auto" onclick="toggleAutoCycle()">🔀 OFF</button>
+            <div class="ctrl-divider"></div>
+            <span class="ctrl-label">Auto Time</span>
+            <input type="range" id="interval-slider" min="2" max="30" value="8" oninput="changeAutoInterval(this.value)"
+                style="width:100px; vertical-align:middle; cursor:pointer; accent-color: #00dd60;">
+            <span id="interval-lbl"
+                style="color: #00dd60; font-size: 12px; min-width: 30px; text-align: left;">8s</span>
+            <div class="ctrl-divider"></div>
+            <span class="ctrl-label">Text Size</span>
+            <input type="range" id="size-slider" min="20" max="200" value="48" oninput="changeTextSize(this.value)"
+                style="width:100px; vertical-align:middle; cursor:pointer; accent-color: #00dd60;">
+            <span id="size-lbl" style="color: #00dd60; font-size: 12px; min-width: 38px; text-align: left;">48px</span>
+            <div class="ctrl-divider"></div>
+            <span class="ctrl-label">Speed</span>
+            <button class="ctrl-btn" id="btn-speed" onclick="cycleSpeed()">⏩ <span id="spd-lbl">1×</span></button>
+            <div class="ctrl-divider"></div>
+            <a href="index.html" class="ctrl-btn" style="border-color: gold; color: gold;">← Main Thoran</a>
+        </div>
+    </nav>
+
+    <script>
+        (() => {
+            const canvas = document.getElementById('led-canvas');
+            const ctx = canvas.getContext('2d');
+
+            let frame = 0;
+            let pattern = 0;
+            let speedIdx = 1;
+            const SPEEDS = [0.5, 1, 1.5, 2.5];
+            const SPEED_LABELS = ['0.5×', '1×', '1.5×', '2.5×'];
+
+            const leds = [];
+            let LW, LH, CX, CY;
+
+            let isAutoCycle = false;
+            let autoInterval = 8000;
+            let lastAutoTime = Date.now();
+
+            const PATTERNS = [
+                { id: 0, icon: '🌊', name: 'Wave' },
+                { id: 1, icon: '⚡', name: 'Chase' },
+                { id: 2, icon: '💚', name: 'Pulse' },
+                { id: 3, icon: '🌈', name: 'Rainbow' },
+                { id: 4, icon: '☄️', name: 'Meteor Flow' },
+                { id: 5, icon: '💥', name: 'Strobe Flash' },
+                { id: 6, icon: '🌬️', name: 'Breathe' },
+                { id: 7, icon: '✨', name: 'Starry Twinkle' },
+                { id: 8, icon: '🏃‍♂️', name: 'Rainbow Run' },
+                { id: 9, icon: '🔲', name: 'Alternating Grid' },
+                { id: 10, icon: '↗️', name: 'Corner Sweep' },
+                { id: 11, icon: '☀️', name: 'Center Radiate' },
+                { id: 12, icon: '🌧️', name: 'Matrix Rain' },
+                { id: 13, icon: '🔥', name: 'Fire Glow' },
+                { id: 14, icon: '🔄', name: 'Dual Chase' },
+                { id: 15, icon: '☸️', name: 'Dharma Sweep' },
+                { id: 16, icon: '💈', name: 'Color Segment' },
+                { id: 17, icon: '〰️', name: 'Sinusoidal' },
+                { id: 18, icon: '🎇', name: 'Sparkle Burst' },
+                { id: 19, icon: '↕️', name: 'Vertical Bounce' },
+                { id: 20, icon: '↔️', name: 'Horizontal Bounce' },
+                { id: 21, icon: '🌀', name: 'Corner Orbit' },
+                { id: 22, icon: '💓', name: 'Heartbeat Pulse' },
+                { id: 23, icon: '🎯', name: 'Crosshair Scanner' },
+                { id: 24, icon: '✨', name: 'Sparkler Ring' },
+                { id: 25, icon: '🎨', name: 'Color Wash' },
+                { id: 26, icon: '🏁', name: 'Binary Twinkle' },
+                { id: 27, icon: '📐', name: 'Diagonal Wave' },
+                { id: 28, icon: '💥', name: 'Center Burst' }
+            ];
+
+            function generateUI() {
+                const container = document.getElementById('pattern-btns');
+                container.innerHTML = '';
+                PATTERNS.forEach(p => {
+                    const btn = document.createElement('button');
+                    btn.className = `ctrl-btn ${p.id === pattern ? 'active' : ''}`;
+                    btn.setAttribute('data-pat', p.id);
+                    btn.innerHTML = `${p.icon} ${p.name}`;
+                    btn.onclick = () => setPattern(p.id, btn);
+                    container.appendChild(btn);
+                });
+            }
+
+            function getRoundedRectPoints(w, h, r, dotGap) {
+                const points = [];
+                r = Math.min(r, w / 2, h / 2);
+
+                const xLeft = -w / 2 + r;
+                const xRight = w / 2 - r;
+                const yTop = -h / 2 + r;
+                const yBottom = h / 2 - r;
+
+                const segments = [
+                    { type: 'line', x1: xLeft, y1: -h / 2, x2: xRight, y2: -h / 2 },
+                    { type: 'arc', cx: xRight, cy: yTop, r: r, startAngle: 1.5 * Math.PI, endAngle: 2 * Math.PI },
+                    { type: 'line', x1: w / 2, y1: yTop, x2: w / 2, y2: yBottom },
+                    { type: 'arc', cx: xRight, cy: yBottom, r: r, startAngle: 0, endAngle: 0.5 * Math.PI },
+                    { type: 'line', x1: xRight, y1: h / 2, x2: xLeft, y2: h / 2 },
+                    { type: 'arc', cx: xLeft, cy: yBottom, r: r, startAngle: 0.5 * Math.PI, endAngle: Math.PI },
+                    { type: 'line', x1: -w / 2, y1: yBottom, x2: -w / 2, y2: yTop },
+                    { type: 'arc', cx: xLeft, cy: yTop, r: r, startAngle: Math.PI, endAngle: 1.5 * Math.PI }
+                ];
+
+                let totalLen = 0;
+                segments.forEach(seg => {
+                    if (seg.type === 'line') {
+                        seg.len = Math.hypot(seg.x2 - seg.x1, seg.y2 - seg.y1);
+                    } else {
+                        seg.len = seg.r * (seg.endAngle - seg.startAngle);
+                    }
+                    totalLen += seg.len;
+                });
+
+                const numPoints = Math.max(8, Math.round(totalLen / dotGap));
+                for (let i = 0; i < numPoints; i++) {
+                    const d = (i / numPoints) * totalLen;
+                    let accumulated = 0;
+                    let pt = null;
+                    for (let j = 0; j < segments.length; j++) {
+                        const seg = segments[j];
+                        if (d >= accumulated && d <= accumulated + seg.len + 0.001) {
+                            const t = (d - accumulated) / seg.len;
+                            if (seg.type === 'line') {
+                                pt = {
+                                    x: seg.x1 + (seg.x2 - seg.x1) * t,
+                                    y: seg.y1 + (seg.y2 - seg.y1) * t
+                                };
+                            } else {
+                                const angle = seg.startAngle + (seg.endAngle - seg.startAngle) * t;
+                                pt = {
+                                    x: seg.cx + Math.cos(angle) * seg.r,
+                                    y: seg.cy + Math.sin(angle) * seg.r
+                                };
+                            }
+                            break;
+                        }
+                        accumulated += seg.len;
+                    }
+                    if (pt) {
+                        points.push(pt);
+                    }
+                }
+                return points;
+            }
+
+            function initLayout() {
+                LW = window.innerWidth;
+                LH = window.innerHeight - 150; // Leave 150px for the controls bar
+                canvas.width = LW;
+                canvas.height = LH;
+                CX = LW / 2;
+                CY = LH / 2;
+                generateLeds();
+            }
+
+            function isInsideRoundedRect(x, y, w, h, r) {
+                r = Math.min(r, w / 2, h / 2);
+                if (Math.abs(x) > w / 2 || Math.abs(y) > h / 2) return false;
+                if (Math.abs(x) <= w / 2 - r || Math.abs(y) <= h / 2 - r) return true;
+                const cx = x > 0 ? w / 2 - r : -w / 2 + r;
+                const cy = y > 0 ? h / 2 - r : -h / 2 + r;
+                return Math.hypot(x - cx, y - cy) <= r;
+            }
+
+            function generateLeds() {
+                leds.length = 0;
+
+                const aspect = 3.2;
+                let W0 = Math.min(LW - 80, LH * aspect * 0.85);
+                let H0 = W0 / aspect;
+                const baseRadius = H0 * 0.22;
+
+                const dotGap = 15.5; // Gap between LEDs in grid
+                const cols = Math.floor(W0 / dotGap);
+                const rows = Math.floor(H0 / dotGap);
+
+                for (let r = 0; r < rows; r++) {
+                    const y = -H0 / 2 + r * dotGap + dotGap / 2;
+                    for (let c = 0; c < cols; c++) {
+                        const x = -W0 / 2 + c * dotGap + dotGap / 2;
+
+                        // Check rounded rect boundary
+                        if (!isInsideRoundedRect(x, y, W0, H0, baseRadius)) continue;
+
+                        // Normalized depth for mapping concentric rings (0 = outer, 7 = inner)
+                        let depthX = 1.0 - (Math.abs(x) / (W0 / 2));
+                        let depthY = 1.0 - (Math.abs(y) / (H0 / 2));
+                        let depth = Math.min(depthX, depthY);
+                        let ring = Math.min(7, Math.floor(depth * 8));
+
+                        let baseCol = 'green';
+                        if (ring === 0) {
+                            baseCol = 'purple';
+                        } else {
+                            baseCol = (ring % 3 === 1) ? 'yellow' : ((ring % 3 === 2) ? 'red' : 'green');
+                        }
+
+                        leds.push({
+                            baseX: x,
+                            baseY: y,
+                            ring: ring,
+                            idx: 0,
+                            count: 0,
+                            base: baseCol,
+                            active: baseCol,
+                            bright: 1,
+                            flick: Math.random() * Math.PI * 2
+                        });
+                    }
+                }
+
+                // Group by ring and sort by angle to support sequential chases
+                const ringGroups = {};
+                leds.forEach(led => {
+                    if (!ringGroups[led.ring]) ringGroups[led.ring] = [];
+                    ringGroups[led.ring].push(led);
+                });
+
+                for (let r = 0; r < 8; r++) {
+                    const group = ringGroups[r] || [];
+                    group.sort((a, b) => {
+                        const angleA = Math.atan2(a.baseY, a.baseX);
+                        const angleB = Math.atan2(b.baseY, b.baseX);
+                        return angleA - angleB;
+                    });
+                    group.forEach((led, idx) => {
+                        led.idx = idx;
+                        led.count = group.length;
+                    });
+                }
+            }
+
+            const HUE = { green: 128, white: 0, red: 355, yellow: 52, blue: 200, cyan: 180, purple: 280, pink: 325, orange: 32 };
+            const SAT = { green: 100, white: 0, red: 100, yellow: 100, blue: 100, cyan: 100, purple: 100, pink: 100, orange: 100 };
+            const LIT = { green: 46, white: 95, red: 52, yellow: 57, blue: 55, cyan: 58, purple: 50, pink: 62, orange: 58 };
+
+            function drawLED(x, y, col, bright) {
+                if (bright < 0.05) return;
+                const hue = HUE[col] || 128;
+                const sat = SAT[col] || 100;
+                const lit = LIT[col] || 50;
+
+                const gr = 10 * bright;
+                const grad = ctx.createRadialGradient(x, y, 0, x, y, gr);
+                grad.addColorStop(0, `hsla(${hue},${sat}%,${lit + 22}%,${bright})`);
+                grad.addColorStop(0.3, `hsla(${hue},${sat}%,${lit}%,${bright * 0.5})`);
+                grad.addColorStop(1, `hsla(${hue},${sat}%,${lit}%,0)`);
+
+                ctx.fillStyle = grad;
+                ctx.beginPath();
+                ctx.arc(x, y, gr, 0, Math.PI * 2);
+                ctx.fill();
+
+                ctx.fillStyle = `hsla(${hue},${sat}%,90%,${Math.min(1, bright + 0.1)})`;
+                ctx.beginPath();
+                ctx.arc(x, y, 3, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            // drawCenterText removed in favor of HTML z-indexed text overlay
+
+            function render() {
+                frame++;
+
+                if (isAutoCycle && Date.now() - lastAutoTime > autoInterval) {
+                    lastAutoTime = Date.now();
+                    const nextPat = Math.floor(Math.random() * PATTERNS.length);
+                    const btn = document.querySelector(`[data-pat="${nextPat}"]`);
+                    if (btn) {
+                        setPattern(nextPat, btn);
+                    }
+                }
+
+                ctx.clearRect(0, 0, LW, LH);
+
+                const t = frame * SPEEDS[speedIdx];
+                ctx.globalCompositeOperation = 'screen';
+
+                leds.forEach(led => {
+                    let b = 0.5;
+                    let c = led.base;
+
+                    const x = CX + led.baseX;
+                    const y = CY + led.baseY;
+
+                    if (pattern === 0) { // Wave
+                        b = Math.sin(t * 0.15 - led.ring * 0.5) * 0.5 + 0.5;
+                    }
+                    else if (pattern === 1) { // Chase
+                        b = (led.ring === Math.floor(t * 0.5) % 8) ? 1.0 : 0.15;
+                    }
+                    else if (pattern === 2) { // Pulse
+                        b = Math.sin(t * 0.1) * 0.45 + 0.55;
+                    }
+                    else if (pattern === 3) { // Rainbow
+                        c = ['red', 'orange', 'yellow', 'green', 'cyan', 'blue', 'purple', 'pink'][(led.ring + Math.floor(t * 0.3)) % 8];
+                        b = 0.95;
+                    }
+                    else if (pattern === 4) { // Meteor Flow
+                        let pos = (led.idx - Math.floor(t * 1.5)) % led.count;
+                        if (pos < 0) pos += led.count;
+                        b = pos < 6 ? (1.0 - pos * 0.15) : 0.08;
+                    }
+                    else if (pattern === 5) { // Strobe Flash
+                        const flash = Math.floor(t * 0.5) % 2;
+                        b = (flash === 0) ? (led.ring % 2 === 0 ? 1.0 : 0.05) : (led.ring % 2 === 1 ? 1.0 : 0.05);
+                    }
+                    else if (pattern === 6) { // Breathe
+                        b = Math.sin(t * 0.04) * 0.48 + 0.52;
+                    }
+                    else if (pattern === 7) { // Starry Twinkle
+                        if (Math.random() > 0.99) {
+                            led.bright = 1.0;
+                        } else {
+                            led.bright *= 0.94;
+                        }
+                        b = Math.max(0.08, led.bright);
+                    }
+                    else if (pattern === 8) { // Rainbow Run
+                        const hueIdx = Math.floor((led.idx / led.count) * 8 + t * 0.2) % 8;
+                        c = ['red', 'orange', 'yellow', 'green', 'cyan', 'blue', 'purple', 'pink'][hueIdx];
+                        b = 0.95;
+                    }
+                    else if (pattern === 9) { // Alternating Grid
+                        const swap = Math.floor(t * 0.05) % 2;
+                        c = ((led.ring % 2) === swap) ? 'red' : 'green';
+                        b = 0.9;
+                    }
+                    else if (pattern === 10) { // Corner Sweep
+                        const dist = (led.baseX + led.baseY) * 0.01;
+                        b = Math.sin(t * 0.15 - dist) * 0.5 + 0.5;
+                    }
+                    else if (pattern === 11) { // Center Radiate
+                        const ringDist = 7 - led.ring;
+                        b = Math.sin(t * 0.18 - ringDist * 0.6) * 0.5 + 0.5;
+                    }
+                    else if (pattern === 12) { // Matrix Rain
+                        const colIndex = Math.floor((led.baseX + 1000) / 40);
+                        const fall = (t * 1.2 + Math.sin(colIndex * 33.1) * 200) % 300;
+                        const d = Math.abs(led.baseY - (fall - 150));
+                        b = d < 30 ? (1.0 - d / 30) : 0.08;
+                        c = 'green';
+                    }
+                    else if (pattern === 13) { // Fire Glow
+                        if (Math.random() > 0.25) {
+                            led.bright = Math.sin(t * 0.3 + led.flick) * 0.35 + 0.65;
+                        }
+                        b = led.bright;
+                        const fireVal = (led.idx + Math.floor(t * 0.2)) % 3;
+                        c = fireVal === 0 ? 'red' : (fireVal === 1 ? 'orange' : 'yellow');
+                    }
+                    else if (pattern === 14) { // Dual Chase
+                        let pos1 = (led.idx - Math.floor(t * 1.5)) % led.count;
+                        if (pos1 < 0) pos1 += led.count;
+                        let pos2 = (led.idx + Math.floor(t * 1.5)) % led.count;
+                        if (pos2 < 0) pos2 += led.count;
+                        b = (pos1 < 4 || pos2 < 4) ? 1.0 : 0.12;
+                    }
+                    else if (pattern === 15) { // Dharma Sweep
+                        const angle = Math.atan2(led.baseY, led.baseX);
+                        const sweep = (angle + Math.PI) / (Math.PI * 2);
+                        const phase = (t * 0.015) % 1.0;
+                        let diff = Math.abs(sweep - phase);
+                        if (diff > 0.5) diff = 1.0 - diff;
+                        b = diff < 0.06 ? (1.0 - diff / 0.06) : 0.08;
+                    }
+                    else if (pattern === 16) { // Color Segment Wave
+                        const angle = Math.atan2(led.baseY, led.baseX);
+                        const seg = Math.floor(((angle + Math.PI) / (Math.PI / 2)) + t * 0.08) % 4;
+                        c = ['red', 'yellow', 'green', 'blue'][seg];
+                        b = 0.95;
+                    }
+                    else if (pattern === 17) { // Sinusoidal Wave
+                        b = Math.sin(t * 0.18 - led.baseX * 0.012) * 0.5 + 0.5;
+                    }
+                    else if (pattern === 18) { // Sparkle Burst
+                        if (Math.random() > 0.985) {
+                            led.bright = 1.0;
+                            c = 'white';
+                        } else {
+                            led.bright = Math.max(0.1, led.bright * 0.9);
+                            c = led.base;
+                        }
+                        b = led.bright;
+                    }
+                    else if (pattern === 19) { // Vertical Bounce
+                        const bounce = Math.sin(t * 0.08) * 120;
+                        const distY = Math.abs(led.baseY - bounce);
+                        b = distY < 25 ? (1.0 - distY / 25) : 0.08;
+                        c = 'cyan';
+                    }
+                    else if (pattern === 20) { // Horizontal Bounce
+                        const bounceX = Math.sin(t * 0.06) * 350;
+                        const distX = Math.abs(led.baseX - bounceX);
+                        b = distX < 35 ? (1.0 - distX / 35) : 0.08;
+                        c = 'orange';
+                    }
+                    else if (pattern === 21) { // Corner Orbit
+                        const speedFactor = t * 0.04;
+                        const orbitAngle = Math.atan2(led.baseY, led.baseX);
+                        const waveOrbit = Math.sin(orbitAngle * 4 + speedFactor) * 0.5 + 0.5;
+                        b = waveOrbit * 0.85 + 0.15;
+                        c = 'purple';
+                    }
+                    else if (pattern === 22) { // Heartbeat Pulse
+                        const cycle = t % 40;
+                        let pulseFactor = 0.1;
+                        if (cycle < 6) {
+                            pulseFactor = 1.0 - (cycle / 6) * 0.8;
+                        } else if (cycle >= 10 && cycle < 16) {
+                            pulseFactor = 1.0 - ((cycle - 10) / 6) * 0.8;
+                        }
+                        b = pulseFactor;
+                        c = 'red';
+                    }
+                    else if (pattern === 23) { // Crosshair Scanner
+                        const scanX = Math.sin(t * 0.07) * 300;
+                        const scanY = Math.cos(t * 0.07) * 100;
+                        const onCross = (Math.abs(led.baseX - scanX) < 18) || (Math.abs(led.baseY - scanY) < 18);
+                        b = onCross ? 1.0 : 0.1;
+                        c = 'yellow';
+                    }
+                    else if (pattern === 24) { // Sparkler Ring
+                        const ringSpin = (led.idx - Math.floor(t * 1.8)) % led.count;
+                        const isSparklePoint = ringSpin < 2 && Math.random() > 0.3;
+                        b = isSparklePoint ? 1.0 : 0.08;
+                        c = isSparklePoint ? 'white' : 'yellow';
+                    }
+                    else if (pattern === 25) { // Color Wash
+                        const washColor = ['red', 'orange', 'yellow', 'green', 'cyan', 'blue', 'purple', 'pink'][Math.floor(t * 0.03) % 8];
+                        c = washColor;
+                        b = Math.sin(t * 0.1) * 0.2 + 0.8;
+                    }
+                    else if (pattern === 26) { // Binary Twinkle
+                        const xCell = Math.floor((led.baseX + 1000) / 60);
+                        const yCell = Math.floor((led.baseY + 1000) / 60);
+                        const activeGrid = (xCell + yCell + Math.floor(t * 0.1)) % 2 === 0;
+                        b = activeGrid ? 0.95 : 0.1;
+                        c = activeGrid ? 'green' : 'red';
+                    }
+                    else if (pattern === 27) { // Diagonal Wave
+                        const diagDist = (led.baseX - led.baseY) * 0.01;
+                        b = Math.sin(t * 0.15 - diagDist) * 0.5 + 0.5;
+                        c = 'pink';
+                    }
+                    else if (pattern === 28) { // Center Burst
+                        const burstProgress = (t * 0.3) % 8;
+                        const ringDiff = Math.abs(led.ring - (7 - burstProgress));
+                        b = ringDiff < 1.5 ? (1.0 - ringDiff / 1.5) : 0.08;
+                        c = 'white';
+                    }
+
+                    drawLED(x, y, c, b);
+                });
+
+                requestAnimationFrame(render);
+            }
+
+            window.setPattern = (p, btn) => {
+                pattern = p;
+                document.querySelectorAll('[data-pat]').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+
+                // If manual click, reset timer so it doesn't cycle immediately
+                if (isAutoCycle) {
+                    lastAutoTime = Date.now();
+                }
+            };
+
+            window.cycleSpeed = () => {
+                speedIdx = (speedIdx + 1) % SPEEDS.length;
+                document.getElementById('spd-lbl').textContent = SPEED_LABELS[speedIdx];
+            };
+
+            window.toggleAutoCycle = () => {
+                isAutoCycle = !isAutoCycle;
+                const btn = document.getElementById('btn-auto');
+                if (btn) {
+                    btn.innerHTML = isAutoCycle ? '🔀 ON' : '🔀 OFF';
+                    btn.classList.toggle('active', isAutoCycle);
+                }
+                if (isAutoCycle) {
+                    lastAutoTime = Date.now();
+                }
+            };
+
+            window.changeTextSize = (val) => {
+                const overlay = document.querySelector('.glowing-text-overlay');
+                if (overlay) {
+                    overlay.style.fontSize = val + 'px';
+                }
+                const lbl = document.getElementById('size-lbl');
+                if (lbl) {
+                    lbl.textContent = val + 'px';
+                }
+            };
+
+            window.changeAutoInterval = (val) => {
+                autoInterval = val * 1000;
+                const lbl = document.getElementById('interval-lbl');
+                if (lbl) {
+                    lbl.textContent = val + 's';
+                }
+            };
+
+            window.addEventListener('resize', initLayout);
+            initLayout();
+            generateUI();
+            render();
+        })();
+    </script>
+</body>
+
+</html>

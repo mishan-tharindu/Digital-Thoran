@@ -46,6 +46,7 @@
         .sidebar::-webkit-scrollbar {
             width: 6px;
         }
+
         .sidebar::-webkit-scrollbar-thumb {
             background: rgba(0, 200, 80, 0.3);
             border-radius: 4px;
@@ -60,6 +61,7 @@
             height: 100vh;
             cursor: grab;
         }
+
         .canvas-wrap:active {
             cursor: grabbing;
         }
@@ -80,7 +82,7 @@
             text-transform: uppercase;
             margin-bottom: 8px;
             display: block;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
             padding-bottom: 4px;
         }
 
@@ -153,7 +155,7 @@
             accent-color: #00dd60;
             cursor: pointer;
         }
-        
+
         select {
             background: rgba(0, 40, 15, 0.5);
             color: #88ffaa;
@@ -169,27 +171,37 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            background: rgba(255,255,255,0.05);
+            background: rgba(255, 255, 255, 0.05);
             padding: 8px 10px;
             border-radius: 8px;
             margin-bottom: 10px;
         }
-        
+
         .switch {
             position: relative;
             display: inline-block;
             width: 34px;
             height: 20px;
         }
-        .switch input { opacity: 0; width: 0; height: 0; }
+
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
         .slider {
             position: absolute;
             cursor: pointer;
-            top: 0; left: 0; right: 0; bottom: 0;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
             background-color: #333;
             transition: .4s;
             border-radius: 20px;
         }
+
         .slider:before {
             position: absolute;
             content: "";
@@ -201,9 +213,14 @@
             transition: .4s;
             border-radius: 50%;
         }
-        input:checked + .slider { background-color: #00dd60; }
-        input:checked + .slider:before { transform: translateX(14px); }
 
+        input:checked+.slider {
+            background-color: #00dd60;
+        }
+
+        input:checked+.slider:before {
+            transform: translateX(14px);
+        }
     </style>
 </head>
 
@@ -212,12 +229,15 @@
     <aside class="sidebar" id="sidebar">
         <div style="display:flex; gap:10px; margin-bottom: 20px;">
             <a href="index.html" class="ctrl-btn gold" style="flex:1;">← Main</a>
-            <button class="ctrl-btn" style="flex:1; justify-content:center; background:rgba(0,180,255,0.2); border-color:#00b4ff; color:#00d0ff;" onclick="toggleProjector()">📽️ Projector</button>
+            <button class="ctrl-btn"
+                style="flex:1; justify-content:center; background:rgba(0,180,255,0.2); border-color:#00b4ff; color:#00d0ff;"
+                onclick="toggleProjector()">📽️ Projector</button>
         </div>
 
         <div class="ctrl-group">
             <div class="setting-row" style="justify-content:space-between; align-items:center;">
-                <span class="ctrl-label" style="margin:0; font-size:14px; font-weight:bold; color: #fff;">Master Power</span>
+                <span class="ctrl-label" style="margin:0; font-size:14px; font-weight:bold; color: #fff;">Master
+                    Power</span>
                 <label class="switch">
                     <input type="checkbox" id="power-check" checked onchange="togglePower(this.checked)">
                     <span class="slider"></span>
@@ -234,7 +254,8 @@
             </div>
             <div class="setting-row">
                 <span>Interval</span>
-                <input type="range" id="interval-slider" min="2" max="30" value="10" oninput="changeInterval(this.value)" style="width: 100px;">
+                <input type="range" id="interval-slider" min="2" max="30" value="10"
+                    oninput="changeInterval(this.value)" style="width: 100px;">
                 <span id="interval-lbl" style="width: 30px; text-align: right;">10s</span>
             </div>
         </div>
@@ -250,11 +271,13 @@
             </div>
             <div class="setting-row">
                 <span>Speed</span>
-                <button class="ctrl-btn" id="btn-speed-bgstar" onclick="cycleSpeedBgStar()" style="width:70px; justify-content:center;">⏩ <span id="spd-lbl-bgstar">1×</span></button>
+                <button class="ctrl-btn" id="btn-speed-bgstar" onclick="cycleSpeedBgStar()"
+                    style="width:70px; justify-content:center;">⏩ <span id="spd-lbl-bgstar">1×</span></button>
             </div>
             <div class="setting-row">
                 <span>Size</span>
-                <input type="range" id="bgstar-size-slider" min="0.1" max="1.5" step="0.05" value="0.45" oninput="changeBgStarSize(this.value)" style="width:100px;">
+                <input type="range" id="bgstar-size-slider" min="0.1" max="1.5" step="0.05" value="0.45"
+                    oninput="changeBgStarSize(this.value)" style="width:100px;">
                 <span id="bgstar-size-lbl" style="width:35px; text-align:right;">0.45</span>
             </div>
             <div class="btn-grid" id="bgstar-btns">
@@ -262,6 +285,13 @@
                 <button class="ctrl-btn" onclick="setPatternBgStar(1, this)">⚡ Chase</button>
                 <button class="ctrl-btn" onclick="setPatternBgStar(2, this)">💚 Pulse</button>
                 <button class="ctrl-btn active" onclick="setPatternBgStar(3, this)">🌈 Rainbow</button>
+                <button class="ctrl-btn" onclick="setPatternBgStar(4, this)">💥 Strobe</button>
+                <button class="ctrl-btn" onclick="setPatternBgStar(5, this)">🌬️ Breathe</button>
+                <button class="ctrl-btn" onclick="setPatternBgStar(6, this)">🌠 Meteor</button>
+            </div>
+            <div class="setting-row" style="margin-top: 5px;">
+                <button class="ctrl-btn" id="btn-auto-bgstar" onclick="toggleAutoBgStar()"
+                    style="flex:1; justify-content:center;">Auto Cycle: OFF</button>
             </div>
         </div>
 
@@ -269,12 +299,14 @@
             <span class="ctrl-label">Center Pattern</span>
             <div class="setting-row">
                 <span>Speed</span>
-                <input type="range" id="speed-slider-center" min="0.1" max="5.0" step="0.1" value="1.0" oninput="changeSpeedCenter(this.value)" style="width:100px;">
+                <input type="range" id="speed-slider-center" min="0.1" max="5.0" step="0.1" value="1.0"
+                    oninput="changeSpeedCenter(this.value)" style="width:100px;">
                 <span id="spd-lbl-center" style="width:35px; text-align:right;">1.0x</span>
             </div>
             <div class="setting-row">
                 <span>Glow</span>
-                <input type="range" id="glow-slider-center" min="0" max="3" step="0.1" value="1.0" oninput="changeGlowCenter(this.value)" style="width:100px;">
+                <input type="range" id="glow-slider-center" min="0" max="3" step="0.1" value="1.0"
+                    oninput="changeGlowCenter(this.value)" style="width:100px;">
                 <span id="glow-lbl-center" style="width:35px; text-align:right;">1.0x</span>
             </div>
             <div class="btn-grid" id="center-btns">
@@ -286,19 +318,21 @@
             <span class="ctrl-label">Outer Patterns</span>
             <div class="setting-row">
                 <span>Speed</span>
-                <input type="range" id="speed-slider-outer" min="0.1" max="5.0" step="0.1" value="1.0" oninput="changeSpeedOuter(this.value)" style="width:100px;">
+                <input type="range" id="speed-slider-outer" min="0.1" max="5.0" step="0.1" value="1.0"
+                    oninput="changeSpeedOuter(this.value)" style="width:100px;">
                 <span id="spd-lbl-outer" style="width:35px; text-align:right;">1.0x</span>
             </div>
             <div class="setting-row">
                 <span>Glow</span>
-                <input type="range" id="glow-slider-outer" min="0" max="3" step="0.1" value="1.0" oninput="changeGlowOuter(this.value)" style="width:100px;">
+                <input type="range" id="glow-slider-outer" min="0" max="3" step="0.1" value="1.0"
+                    oninput="changeGlowOuter(this.value)" style="width:100px;">
                 <span id="glow-lbl-outer" style="width:35px; text-align:right;">1.0x</span>
             </div>
             <div class="btn-grid" id="outer-btns">
                 <!-- Buttons injected by JS -->
             </div>
         </div>
-        
+
         <div class="ctrl-group">
             <span class="ctrl-label">Image Settings</span>
             <div class="setting-row">
@@ -313,7 +347,8 @@
                     <option value="7">Panel 7 (Bottom)</option>
                     <option value="8">Panel 8</option>
                 </select>
-                <input type="file" id="image-upload" accept="image/*" style="display: none;" onchange="handleImageUpload(event)">
+                <input type="file" id="image-upload" accept="image/*" style="display: none;"
+                    onchange="handleImageUpload(event)">
                 <button class="ctrl-btn" onclick="document.getElementById('image-upload').click()">Upload 📁</button>
             </div>
         </div>
@@ -322,21 +357,25 @@
             <span class="ctrl-label">Global View</span>
             <div class="setting-row">
                 <span>Gap Size</span>
-                <input type="range" id="gap-slider" min="-50" max="150" value="15" oninput="changeGap(this.value)" style="width:120px;">
+                <input type="range" id="gap-slider" min="-50" max="150" value="15" oninput="changeGap(this.value)"
+                    style="width:120px;">
                 <span id="gap-lbl" style="width: 35px; text-align: right;">15px</span>
             </div>
             <div class="setting-row">
                 <span>Size</span>
-                <input type="range" id="size-slider" min="100" max="250" value="180" oninput="changeSize(this.value)" style="width:120px;">
+                <input type="range" id="size-slider" min="100" max="250" value="180" oninput="changeSize(this.value)"
+                    style="width:120px;">
             </div>
             <div class="setting-row">
                 <span>Zoom</span>
-                <input type="range" id="zoom-slider" min="0.5" max="3" step="0.1" value="1" oninput="changeZoom(this.value)" style="width:120px;">
+                <input type="range" id="zoom-slider" min="0.5" max="3" step="0.1" value="1"
+                    oninput="changeZoom(this.value)" style="width:120px;">
                 <span id="zoom-lbl" style="width: 35px; text-align: right;">1.0x</span>
             </div>
             <div class="setting-row">
                 <span>Global Glow</span>
-                <input type="range" id="glow-slider-global" min="0" max="3" step="0.1" value="1.0" oninput="changeGlowGlobal(this.value)" style="width:100px;">
+                <input type="range" id="glow-slider-global" min="0" max="3" step="0.1" value="1.0"
+                    oninput="changeGlowGlobal(this.value)" style="width:100px;">
                 <span id="glow-lbl-global" style="width:35px; text-align:right;">1.0x</span>
             </div>
             <div class="setting-row" style="justify-content: center; margin-top: 10px;">
@@ -347,13 +386,17 @@
         <div class="ctrl-group">
             <span class="ctrl-label">Audio Settings</span>
             <div class="setting-row">
-                <input type="file" id="audio-upload" accept="audio/*" style="display: none;" onchange="handleAudioUpload(event)">
-                <button class="ctrl-btn" onclick="document.getElementById('audio-upload').click()">Load Audio 🎵</button>
-                <button class="ctrl-btn" id="btn-play-pause" onclick="togglePlayPause()" style="width:80px;">▶️ Play</button>
+                <input type="file" id="audio-upload" accept="audio/*" style="display: none;"
+                    onchange="handleAudioUpload(event)">
+                <button class="ctrl-btn" onclick="document.getElementById('audio-upload').click()">Load Audio
+                    🎵</button>
+                <button class="ctrl-btn" id="btn-play-pause" onclick="togglePlayPause()" style="width:80px;">▶️
+                    Play</button>
             </div>
             <div class="setting-row">
                 <span>Volume</span>
-                <input type="range" id="volume-slider" min="0" max="1" step="0.05" value="0.5" oninput="changeVolume(this.value)" style="width:100px;">
+                <input type="range" id="volume-slider" min="0" max="1" step="0.05" value="0.5"
+                    oninput="changeVolume(this.value)" style="width:100px;">
                 <span id="vol-lbl" style="width:35px; text-align:right;">50%</span>
             </div>
             <audio id="bg-audio" loop></audio>
@@ -362,6 +405,9 @@
     </aside>
 
     <div class="canvas-wrap" id="canvas-wrap">
+        <button id="toggle-sidebar-btn" onclick="toggleSidebar()"
+            style="position:fixed; left:10px; top:10px; z-index:100; background:rgba(0,0,0,0.6); color:#fff; border:1px solid #444; border-radius:4px; padding:8px 12px; cursor:pointer;">☰
+            Menu</button>
         <canvas id="led-canvas"></canvas>
     </div>
 
@@ -371,10 +417,10 @@
 
             const canvas = document.getElementById('led-canvas');
             const mainCtx = canvas.getContext('2d');
-            
+
             const offCanvasCenter = document.createElement('canvas');
             const ctxCenter = offCanvasCenter.getContext('2d');
-            
+
             const offCanvasOuter = document.createElement('canvas');
             const ctxOuter = offCanvasOuter.getContext('2d');
 
@@ -401,7 +447,7 @@
             function generateUI() {
                 const centerGrid = document.getElementById('center-btns');
                 const outerGrid = document.getElementById('outer-btns');
-                
+
                 PATTERNS.forEach(p => {
                     if (p.id !== 17) {
                         const btnC = document.createElement('button');
@@ -411,7 +457,7 @@
                         btnC.onclick = () => setPatternCenter(p.id);
                         centerGrid.appendChild(btnC);
                     }
-                    
+
                     const btnO = document.createElement('button');
                     btnO.className = `ctrl-btn ${p.id === patternOuter ? 'active' : ''}`;
                     btnO.id = `btn-o-${p.id}`;
@@ -425,32 +471,32 @@
             const RING_SPACING = 16;
             const DOT_GAP = 14.8;
             const NUM_RINGS = 17;
-            
+
             let BUDDHA_R = 180;
             let RING_START, LAST_RING_R, SOLID_R, OUTER_R, TOTAL_R, CX, CY;
             let panels = [];
-            
+
             function recalcLayout() {
                 RING_START = BUDDHA_R + 22;
                 LAST_RING_R = RING_START + (NUM_RINGS - 1) * RING_SPACING;
                 SOLID_R = LAST_RING_R + 14;
                 OUTER_R = SOLID_R + 10;
                 TOTAL_R = OUTER_R + 18;
-                
+
                 CX = 0; CY = 0;
-                
+
                 const canvasSize = Math.ceil(TOTAL_R * 2 + 40);
                 offCanvasCenter.width = canvasSize;
                 offCanvasCenter.height = canvasSize;
-                
+
                 offCanvasOuter.width = canvasSize;
                 offCanvasOuter.height = canvasSize;
-                
+
                 generateLeds();
                 generateBgStarLeds();
                 if (typeof resize === 'function') resize();
             }
-            
+
             /* ── State ───────────────────────────────────── */
             let frame = 0;
             let patternCenter = 10; // Default Diamond
@@ -462,14 +508,14 @@
             try {
                 if (localStorage.getItem('speedsCenter')) patternSpeedsCenter = JSON.parse(localStorage.getItem('speedsCenter'));
                 if (localStorage.getItem('speedsOuter')) patternSpeedsOuter = JSON.parse(localStorage.getItem('speedsOuter'));
-            } catch(e) {}
-            
+            } catch (e) { }
+
             let patternOuter = 6;  // Default Sun Leaf
 
             let isAuto = false;
             let autoInterval = 10000;
             let lastAutoTime = Date.now();
-            
+
             // View Controls
             let zoomFactor = 1.0;
             let panelGap = 15;
@@ -491,7 +537,9 @@
             const SPEEDS = [0.4, 1, 1.8, 3];
             const SPEED_LABELS = ['0.4×', '1×', '1.8×', '3×'];
             let bgStarSizeFactor = localStorage.getItem('bgStarSize') ? parseFloat(localStorage.getItem('bgStarSize')) : 0.65;
-            
+            let isAutoBgStar = false;
+            let lastAutoBgStarTime = Date.now();
+
             document.getElementById('bgstar-size-slider').value = bgStarSizeFactor;
             document.getElementById('bgstar-size-lbl').textContent = bgStarSizeFactor.toFixed(2);
 
@@ -506,10 +554,10 @@
             window.handleImageUpload = (event) => {
                 const file = event.target.files[0];
                 if (!file) return;
-                
+
                 const select = document.getElementById('panel-select');
                 const targetIndex = parseInt(select.value, 10);
-                
+
                 const reader = new FileReader();
                 reader.onload = (e) => {
                     const tempImg = new Image();
@@ -517,17 +565,17 @@
                         const maxDim = 800;
                         let w = tempImg.width, h = tempImg.height;
                         if (w > maxDim || h > maxDim) {
-                            if (w > h) { h = (h/w)*maxDim; w = maxDim; }
-                            else { w = (w/h)*maxDim; h = maxDim; }
+                            if (w > h) { h = (h / w) * maxDim; w = maxDim; }
+                            else { w = (w / h) * maxDim; h = maxDim; }
                         }
                         const cvs = document.createElement('canvas');
                         cvs.width = w; cvs.height = h;
                         const ctx = cvs.getContext('2d');
                         ctx.drawImage(tempImg, 0, 0, w, h);
                         const dataUrl = cvs.toDataURL('image/jpeg', 0.85);
-                        
+
                         panelImages[targetIndex].src = dataUrl;
-                        try { localStorage.setItem('panelImg_' + targetIndex, dataUrl); } catch(err) {}
+                        try { localStorage.setItem('panelImg_' + targetIndex, dataUrl); } catch (err) { }
                     };
                     tempImg.src = e.target.result;
                 };
@@ -549,35 +597,35 @@
                 const wrap = document.getElementById('canvas-wrap');
                 const LW = Math.max(wrap.clientWidth, 1200);
                 const LH = Math.max(wrap.clientHeight, 800);
-                
+
                 const numRings = 15;
                 const baseSize = Math.min(LW, LH) * bgStarSizeFactor;
                 const ringSpacing = baseSize / numRings;
-                
-                for(let ring = 1; ring <= numRings; ring++) {
+
+                for (let ring = 1; ring <= numRings; ring++) {
                     const R = ring * ringSpacing;
-                    const r_inner = R * Math.sqrt(2 - Math.SQRT2); 
-                    
-                    for(let seg = 0; seg < 16; seg++) {
+                    const r_inner = R * Math.sqrt(2 - Math.SQRT2);
+
+                    for (let seg = 0; seg < 16; seg++) {
                         const angle1 = seg * Math.PI / 8;
                         const angle2 = (seg + 1) * Math.PI / 8;
-                        
+
                         const r1 = (seg % 2 === 0) ? R : r_inner;
                         const r2 = (seg % 2 === 0) ? r_inner : R;
-                        
+
                         const x1 = Math.cos(angle1) * r1;
                         const y1 = Math.sin(angle1) * r1;
                         const x2 = Math.cos(angle2) * r2;
                         const y2 = Math.sin(angle2) * r2;
-                        
+
                         const segLen = Math.hypot(x2 - x1, y2 - y1);
-                        const points = Math.max(1, Math.floor(segLen / 15)); 
-                        
-                        for(let p = 0; p < points; p++) {
+                        const points = Math.max(1, Math.floor(segLen / 15));
+
+                        for (let p = 0; p < points; p++) {
                             const t = p / points;
                             const x = x1 + (x2 - x1) * t;
                             const y = y1 + (y2 - y1) * t;
-                            
+
                             bgLeds.push({
                                 baseX: x, baseY: y, ring: ring, seg: seg,
                                 base: (ring % 3 === 0) ? 'yellow' : ((ring % 3 === 1) ? 'red' : 'green'),
@@ -635,16 +683,16 @@
 
             function updateAndDrawBgStar(ctx) {
                 if (!showBgStar) return;
-                
+
                 const t = frame * SPEEDS[speedIdxBgStar];
                 ctx.save();
                 ctx.globalCompositeOperation = 'screen';
-                
+
                 // Position background star relative to the global pan/zoom center
                 const wrap = document.getElementById('canvas-wrap');
                 const centerX = wrap.clientWidth / 2;
                 const centerY = wrap.clientHeight / 2;
-                
+
                 ctx.translate(centerX + panX, centerY + panY);
                 ctx.scale(zoomFactor, zoomFactor);
 
@@ -656,10 +704,22 @@
                     else if (patternBgStar === 1) b = (led.ring === Math.floor(t) % 16) ? 1 : 0.2;
                     else if (patternBgStar === 2) b = Math.sin(t * 0.2) * 0.5 + 0.5;
                     else if (patternBgStar === 3) {
-                        c = ['red','yellow','green','cyan','blue'][(led.ring + Math.floor(t*0.5)) % 5];
+                        c = ['red', 'yellow', 'green', 'cyan', 'blue'][(led.ring + Math.floor(t * 0.5)) % 5];
                         b = 0.9;
                     }
-                    
+                    else if (patternBgStar === 4) { // Strobe
+                        b = (Math.floor(t * 1.5) % 2 === 0) ? 0.9 : 0.05;
+                    }
+                    else if (patternBgStar === 5) { // Breathe
+                        b = Math.sin(t * 0.1) * 0.45 + 0.55;
+                    }
+                    else if (patternBgStar === 6) { // Meteor
+                        const band = (led.ring - Math.floor(t * 2)) % 15;
+                        const posBand = band < 0 ? band + 15 : band;
+                        b = posBand < 3 ? 1 : 0.05;
+                        c = 'cyan';
+                    }
+
                     drawLED(ctx, led.baseX, led.baseY, c, b, 3, 10);
                 });
                 ctx.restore();
@@ -763,18 +823,18 @@
                             const angle = Math.atan2(led.y - CY, led.x - CX);
                             const shiftedAngle = angle - Math.PI / 2;
                             let normAngle = (shiftedAngle % petalSpan + petalSpan) % petalSpan;
-                            
-                            const spokeGap = 0.12; 
+
+                            const spokeGap = 0.12;
                             if (normAngle < spokeGap || normAngle > petalSpan - spokeGap) {
                                 led.active = 'yellow';
                                 b = 0.7; // Golden spokes
                             } else {
                                 const wave = ring - t * 0.35;
                                 const cycle = ((wave % 6) + 6) % 6;
-                                
+
                                 const bgColors = ['cyan', 'pink', 'blue', 'green'];
                                 const colorIdx = Math.floor(t * 0.03) % bgColors.length;
-                                
+
                                 if (cycle < 2) {
                                     led.active = 'white';
                                     b = 0.95;
@@ -791,20 +851,20 @@
                             const angle = Math.atan2(led.y - CY, led.x - CX);
                             const shiftedAngle = angle - Math.PI / 2;
                             let normAngle = (shiftedAngle % petalSpan + petalSpan) % petalSpan;
-                            
-                            const spokeGap = 0.10; 
+
+                            const spokeGap = 0.10;
                             if (normAngle < spokeGap || normAngle > petalSpan - spokeGap) {
                                 // Golden spokes ALWAYS showing
                                 led.active = 'yellow';
-                                b = 0.8; 
+                                b = 0.8;
                             } else {
                                 // Anti-clockwise angle starting from top
                                 let acwAngle = (-angle - Math.PI / 2 + Math.PI * 4) % (Math.PI * 2);
-                                
+
                                 let speed = 0.35; // Slower speed
                                 let sweepPhase = (t * speed) % (Math.PI * 2);
                                 let dist = (sweepPhase - acwAngle + Math.PI * 2) % (Math.PI * 2);
-                                
+
                                 // Tail length of half a circle (Math.PI)
                                 if (dist < Math.PI) {
                                     // 4 lines ON, 2 lines OFF
@@ -830,24 +890,24 @@
                             const angle = Math.atan2(dy, dx);
                             const shiftedAngle = angle - Math.PI / 2;
                             let normAngle = (shiftedAngle % petalSpan + petalSpan) % petalSpan;
-                            
-                            const spokeGap = 0.10; 
+
+                            const spokeGap = 0.10;
                             if (normAngle < spokeGap || normAngle > petalSpan - spokeGap) {
                                 led.active = 'yellow';
                                 b = 0.8; // Golden spokes
                             } else {
                                 let deltaAngle = Math.abs(normAngle - petalSpan / 2);
                                 let d = Math.hypot(dx, dy) * Math.sin(deltaAngle);
-                                
+
                                 let lineSpacing = 60; // Tuned for 5 lines per slice
                                 let lineWidth = 9;
                                 let distToClosestLine = Math.abs(Math.round(d / lineSpacing) * lineSpacing - d);
-                                
+
                                 if (distToClosestLine < lineWidth) {
                                     let sliceIdx = Math.floor((shiftedAngle + Math.PI * 2) / petalSpan);
                                     let lineIdx = Math.round(d / lineSpacing);
                                     let hash = Math.abs(Math.sin(sliceIdx * 12.9898 + lineIdx * 78.233));
-                                    
+
                                     if (Math.sin(t * 0.5 + hash * 10) > 0.3) {
                                         led.active = 'white';
                                         b = 1.0;
@@ -872,7 +932,7 @@
             }
 
             function drawBg() {
-                const g = mainCtx.createRadialGradient(canvas.width/2, canvas.height/2, 55, canvas.width/2, canvas.height/2, Math.max(canvas.width, canvas.height));
+                const g = mainCtx.createRadialGradient(canvas.width / 2, canvas.height / 2, 55, canvas.width / 2, canvas.height / 2, Math.max(canvas.width, canvas.height));
                 g.addColorStop(0, '#030e1e');
                 g.addColorStop(0.38, '#010b14');
                 g.addColorStop(1, '#000105');
@@ -883,7 +943,7 @@
             /* ── Draw Center Image directly to Main Canvas ─── */
             function drawCenter(ctx, panelIndex, scaleRatio) {
                 const img = panelImages[panelIndex];
-                
+
                 // Dark background
                 const bg = ctx.createRadialGradient(CX, CY - 20, 10, CX, CY, BUDDHA_R);
                 bg.addColorStop(0, '#241000'); bg.addColorStop(0.65, '#120800'); bg.addColorStop(1, '#060300');
@@ -934,15 +994,60 @@
             function renderLedsToCtx(ctxOff, pattern, speed) {
                 if (!isPowerOn) {
                     ctxOff.clearRect(0, 0, ctxOff.canvas.width, ctxOff.canvas.height);
+                    ctxOff.save();
+                    const halfW = ctxOff.canvas.width / 2;
+                    const halfH = ctxOff.canvas.height / 2;
+                    ctxOff.translate(halfW, halfH);
+
+                    // Solid black background donut to prevent background star from bleeding through
+                    ctxOff.fillStyle = '#000000';
+                    ctxOff.beginPath();
+                    ctxOff.arc(CX, CY, TOTAL_R + 8, 0, Math.PI * 2, false); // Outer boundary
+                    ctxOff.arc(CX, CY, BUDDHA_R + 12, 0, Math.PI * 2, true); // Inner cutout (drawn counter-clockwise)
+                    ctxOff.fill();
+
+                    const isCenter = (ctxOff.canvas === offCanvasCenter);
+
+                    // Draw gray LEDs to simulate off state
+                    leds.forEach(l => {
+                        if (!isCenter && l.ring >= 7) return;
+
+                        ctxOff.fillStyle = '#111111';
+                        ctxOff.beginPath();
+                        ctxOff.arc(l.x, l.y, 2.5, 0, Math.PI * 2);
+                        ctxOff.fill();
+
+                        // faint core
+                        ctxOff.fillStyle = '#222222';
+                        ctxOff.beginPath();
+                        ctxOff.arc(l.x, l.y, 1.0, 0, Math.PI * 2);
+                        ctxOff.fill();
+                    });
+
+                    /* Outer border */
+                    ctxOff.strokeStyle = '#333300'; ctxOff.lineWidth = 4;
+                    ctxOff.beginPath(); ctxOff.arc(CX, CY, SOLID_R, 0, Math.PI * 2); ctxOff.stroke();
+
+                    const OUTER_N = Math.floor((2 * Math.PI * OUTER_R) / 20);
+                    for (let i = 0; i < OUTER_N; i++) {
+                        const a = (i / OUTER_N) * Math.PI * 2;
+                        const dx = CX + OUTER_R * Math.cos(a);
+                        const dy = CY + OUTER_R * Math.sin(a);
+                        ctxOff.fillStyle = '#333300';
+                        ctxOff.beginPath(); ctxOff.arc(dx, dy, 3.2, 0, Math.PI * 2); ctxOff.fill();
+                    }
+
+                    ctxOff.restore();
                     return;
                 }
+
                 ctxOff.clearRect(0, 0, ctxOff.canvas.width, ctxOff.canvas.height);
                 ctxOff.save();
-                
+
                 const halfW = ctxOff.canvas.width / 2;
                 const halfH = ctxOff.canvas.height / 2;
                 ctxOff.translate(halfW, halfH);
-                
+
                 // Solid black background donut to prevent background star from bleeding through
                 // but leaving the center transparent so the image and gold rings show!
                 ctxOff.fillStyle = '#000000';
@@ -988,19 +1093,27 @@
             /* ── Main Render Loop ─────────────────────────── */
             function render() {
                 frame++;
-                
+
                 if (isAuto && Date.now() - lastAutoTime > autoInterval) {
                     lastAutoTime = Date.now();
                     setPatternCenter((patternCenter + 1) % PATTERNS.length);
                     setPatternOuter((patternOuter + 1) % PATTERNS.length);
                 }
-                
+
+                if (isAutoBgStar && Date.now() - lastAutoBgStarTime > autoInterval) {
+                    lastAutoBgStarTime = Date.now();
+                    patternBgStar = (patternBgStar + 1) % 7;
+                    const btns = document.getElementById('bgstar-btns').querySelectorAll('.ctrl-btn');
+                    btns.forEach(b => b.classList.remove('active'));
+                    if (btns[patternBgStar]) btns[patternBgStar].classList.add('active');
+                }
+
                 mainCtx.clearRect(0, 0, canvas.width, canvas.height);
                 drawBg();
-                
+
                 // Draw Background Star (Behind everything)
                 updateAndDrawBgStar(mainCtx);
-                
+
                 // Render the two sets of panel LEDs
                 renderLedsToCtx(ctxCenter, patternCenter, patternSpeedsCenter[patternCenter]);
                 renderLedsToCtx(ctxOuter, patternOuter, patternSpeedsOuter[patternOuter]);
@@ -1016,24 +1129,24 @@
 
                 panels.forEach((panel, i) => {
                     mainCtx.save();
-                    
+
                     // Multiply offsets by zoomFactor to prevent overlap
                     mainCtx.translate(
-                        centerX + (panel.offsetX * zoomFactor) + panX, 
+                        centerX + (panel.offsetX * zoomFactor) + panX,
                         centerY + (panel.offsetY * zoomFactor) + panY
                     );
-                    
+
                     const scaleRatio = panel.scale * zoomFactor;
                     mainCtx.scale(scaleRatio, scaleRatio);
-                    
+
                     drawCenter(mainCtx, i, scaleRatio);
-                    
+
                     if (i === 0) {
                         mainCtx.drawImage(offCanvasCenter, drawX, drawY, drawW, drawH);
                     } else {
                         mainCtx.drawImage(offCanvasOuter, drawX, drawY, drawW, drawH);
                     }
-                    
+
                     mainCtx.restore();
                 });
 
@@ -1061,7 +1174,7 @@
             window.setPatternCenter = (p) => {
                 patternCenter = p;
                 updateButtonStates('center-btns', p);
-                
+
                 const spd = patternSpeedsCenter[patternCenter];
                 document.getElementById('speed-slider-center').value = spd;
                 document.getElementById('spd-lbl-center').textContent = spd.toFixed(1) + 'x';
@@ -1070,12 +1183,12 @@
             window.setPatternOuter = (p) => {
                 patternOuter = p;
                 updateButtonStates('outer-btns', p);
-                
+
                 const spd = patternSpeedsOuter[patternOuter];
                 document.getElementById('speed-slider-outer').value = spd;
                 document.getElementById('spd-lbl-outer').textContent = spd.toFixed(1) + 'x';
             };
-            
+
             window.setPatternBgStar = (p, btn) => {
                 patternBgStar = p;
                 localStorage.setItem('patternBgStar', p);
@@ -1083,7 +1196,7 @@
                 btns.forEach(b => b.classList.remove('active'));
                 btn.classList.add('active');
             }
-            
+
             // Re-apply correct active button for BgStar on load
             document.addEventListener('DOMContentLoaded', () => {
                 const btns = document.getElementById('bgstar-btns').querySelectorAll('.ctrl-btn');
@@ -1092,7 +1205,7 @@
                     else b.classList.remove('active');
                 });
             });
-            
+
             function updateButtonStates(containerId, activePattern) {
                 const container = document.getElementById(containerId);
                 const btns = container.querySelectorAll('.ctrl-btn');
@@ -1101,6 +1214,16 @@
                     else b.classList.remove('active');
                 });
             }
+
+            window.toggleSidebar = () => {
+                const sidebar = document.getElementById('sidebar');
+                if (sidebar.style.display === 'none') {
+                    sidebar.style.display = 'block';
+                } else {
+                    sidebar.style.display = 'none';
+                }
+                setTimeout(resetView, 50);
+            };
 
             window.toggleProjector = () => {
                 const sidebar = document.getElementById('sidebar');
@@ -1112,7 +1235,7 @@
                     document.exitFullscreen();
                 }
             };
-            
+
             document.addEventListener('fullscreenchange', () => {
                 const sidebar = document.getElementById('sidebar');
                 if (document.fullscreenElement) {
@@ -1130,7 +1253,7 @@
                 if (btn) btn.querySelector('.spd-badge').textContent = spd.toFixed(1) + 'x';
                 localStorage.setItem('speedsCenter', JSON.stringify(patternSpeedsCenter));
             };
-            
+
             window.changeSpeedOuter = (val) => {
                 const spd = parseFloat(val);
                 patternSpeedsOuter[patternOuter] = spd;
@@ -1139,22 +1262,22 @@
                 if (btn) btn.querySelector('.spd-badge').textContent = spd.toFixed(1) + 'x';
                 localStorage.setItem('speedsOuter', JSON.stringify(patternSpeedsOuter));
             };
-            
+
             window.changeGlowCenter = (val) => {
                 glowCenter = parseFloat(val);
                 document.getElementById('glow-lbl-center').textContent = glowCenter.toFixed(1) + 'x';
             };
-            
+
             window.changeGlowOuter = (val) => {
                 glowOuter = parseFloat(val);
                 document.getElementById('glow-lbl-outer').textContent = glowOuter.toFixed(1) + 'x';
             };
-            
+
             window.changeGlowGlobal = (val) => {
                 glowGlobal = parseFloat(val);
                 document.getElementById('glow-lbl-global').textContent = glowGlobal.toFixed(1) + 'x';
             };
-            
+
             window.togglePower = (checked) => {
                 isPowerOn = checked;
                 const audio = document.getElementById('bg-audio');
@@ -1166,7 +1289,7 @@
                     document.getElementById('btn-play-pause').innerHTML = '⏸️ Pause';
                 }
             };
-            
+
             window.handleAudioUpload = (event) => {
                 const file = event.target.files[0];
                 if (!file) return;
@@ -1178,11 +1301,11 @@
                     document.getElementById('btn-play-pause').innerHTML = '⏸️ Pause';
                 }
             };
-            
+
             window.togglePlayPause = () => {
                 const audio = document.getElementById('bg-audio');
                 if (!audio.src) return;
-                
+
                 if (audio.paused) {
                     audio.play();
                     document.getElementById('btn-play-pause').innerHTML = '⏸️ Pause';
@@ -1191,22 +1314,27 @@
                     document.getElementById('btn-play-pause').innerHTML = '▶️ Play';
                 }
             };
-            
+
+            window.toggleAutoBgStar = () => {
+                isAutoBgStar = !isAutoBgStar;
+                document.getElementById('btn-auto-bgstar').textContent = `Auto Cycle: ${isAutoBgStar ? 'ON' : 'OFF'}`;
+            };
+
             window.changeVolume = (val) => {
                 const vol = parseFloat(val);
                 document.getElementById('bg-audio').volume = vol;
                 document.getElementById('vol-lbl').textContent = Math.round(vol * 100) + '%';
             };
-            
+
             window.cycleSpeedBgStar = () => {
                 speedIdxBgStar = (speedIdxBgStar + 1) % SPEEDS.length;
                 document.getElementById('spd-lbl-bgstar').textContent = SPEED_LABELS[speedIdxBgStar];
             };
-            
+
             window.toggleBgStar = (checked) => {
                 showBgStar = checked;
             }
-            
+
             window.changeBgStarSize = (val) => {
                 bgStarSizeFactor = parseFloat(val);
                 localStorage.setItem('bgStarSize', bgStarSizeFactor);
@@ -1218,13 +1346,13 @@
                 zoomFactor = parseFloat(val);
                 document.getElementById('zoom-lbl').textContent = zoomFactor.toFixed(1) + 'x';
             };
-            
+
             window.changeGap = (val) => {
                 panelGap = parseInt(val, 10);
                 document.getElementById('gap-lbl').textContent = val + 'px';
                 resize();
             }
-            
+
             window.resetView = () => {
                 zoomFactor = 1.0;
                 panX = 0;
@@ -1232,17 +1360,17 @@
                 document.getElementById('zoom-slider').value = 1.0;
                 document.getElementById('zoom-lbl').textContent = '1.0x';
             };
-            
+
             window.changeSize = (val) => {
                 BUDDHA_R = parseInt(val, 10);
                 recalcLayout();
             };
-            
+
             window.toggleAuto = (checked) => {
                 isAuto = checked;
                 if (isAuto) lastAutoTime = Date.now();
             };
-            
+
             window.changeInterval = (val) => {
                 autoInterval = parseInt(val, 10) * 1000;
                 document.getElementById('interval-lbl').textContent = val + 's';
@@ -1252,17 +1380,17 @@
             function resize() {
                 const avW = wrap.clientWidth;
                 const avH = wrap.clientHeight;
-                
+
                 canvas.width = avW;
                 canvas.height = avH;
-                
-                const outerScale = 0.55; 
+
+                const outerScale = 0.55;
                 // The maxRadius calculates how far from the center the outer panels reach, used to shrink the whole thing to fit the screen
                 const maxRadius = TOTAL_R + (TOTAL_R * outerScale * 2) + panelGap;
                 const scaleToFit = Math.min(avW / (maxRadius * 2.1), avH / (maxRadius * 2.1));
-                
+
                 const dist = (TOTAL_R + (TOTAL_R * outerScale) + panelGap) * scaleToFit;
-                
+
                 panels = [{ offsetX: 0, offsetY: 0, scale: scaleToFit }]; // Center Panel
                 for (let i = 0; i < 8; i++) {
                     const angle = (i / 8) * Math.PI * 2 - Math.PI / 2;
@@ -1282,4 +1410,5 @@
         })();
     </script>
 </body>
+
 </html>
